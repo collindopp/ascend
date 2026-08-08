@@ -1,0 +1,231 @@
+// ASCEND data model.
+// See /DATABASE.md for a narrative description of these entities and why they're shaped this way.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  SETTER
+}
+
+enum LeadListStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum SessionStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum SessionEventType {
+  DIAL
+  CONVERSATION
+  APPOINTMENT
+  UNDO
+}
+
+enum IntegrationProviderName {
+  QUICKBASE
+  SCOUT_DATA
+  TWO_X_CONNECT
+}
+
+enum IntegrationStatus {
+  NOT_CONNECTED
+  CONNECTED
+  ERROR
+  SYNCING
+}
+
+enum IntegrationJobType {
+  IMPORT
+  EXPORT
+  SYNC
+}
+
+enum IntegrationJobStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+
+  @@map("teams")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(SETTER)
+  teamId       String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  team              Team?              @relation(fields: [teamId], references: [id])
+  callingSessions   CallingSession[]
+  createdLeadLists  LeadList[]         @relation("LeadListCreatedBy")
+  auditLogs         AuditLog[]
+  dailyAggregates   DailyAggregate[]
+
+  @@index([teamId])
+  @@index([role])
+  @@map("users")
+}
+
+model LeadList {
+  id          String         @id @default(cuid())
+  name        String
+  source      String
+  location    String?
+  description String?
+  status      LeadListStatus @default(ACTIVE)
+  leadCount   Int?
+  externalId  String?
+  tags        String[]       @default([])
+  createdById String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  createdBy       User?             @relation("LeadListCreatedBy", fields: [createdById], references: [id])
+  callingSessions CallingSession[]
+  dailyAggregates DailyAggregate[]
+
+  @@index([status])
+  @@map("lead_lists")
+}
+
+model CallingSession {
+  id           String        @id @default(cuid())
+  setterId     String
+  leadListId   String
+  startedAt    DateTime      @default(now())
+  endedAt      DateTime?
+  status       SessionStatus @default(ACTIVE)
+  dials        Int           @default(0)
+  conversations Int          @default(0)
+  appointments Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  setter   User          @relation(fields: [setterId], references: [id])
+  leadList LeadList      @relation(fields: [leadListId], references: [id])
+  events   SessionEvent[]
+
+  @@index([setterId])
+  @@index([leadListId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("calling_sessions")
+}
+
+model SessionEvent {
+  id        String            @id @default(cuid())
+  sessionId String
+  type      SessionEventType
+  createdAt DateTime          @default(now())
+
+  session CallingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("session_events")
+}
+
+model DailyAggregate {
+  id               String   @id @default(cuid())
+  date             DateTime @db.Date
+  setterId         String
+  leadListId       String
+  dials            Int      @default(0)
+  conversations    Int      @default(0)
+  appointments     Int      @default(0)
+  sessionsCount    Int      @default(0)
+  durationSeconds  Int      @default(0)
+  updatedAt        DateTime @updatedAt
+
+  setter   User     @relation(fields: [setterId], references: [id])
+  leadList LeadList @relation(fields: [leadListId], references: [id])
+
+  @@unique([date, setterId, leadListId])
+  @@index([date])
+  @@index([setterId])
+  @@index([leadListId])
+  @@map("daily_aggregates")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model IntegrationConfig {
+  id         String                   @id @default(cuid())
+  provider   IntegrationProviderName  @unique
+  status     IntegrationStatus        @default(NOT_CONNECTED)
+  lastSyncAt DateTime?
+  config     Json?
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+
+  jobs IntegrationJob[]
+
+  @@map("integration_configs")
+}
+
+model IntegrationJob {
+  id        String                  @id @default(cuid())
+  provider  IntegrationProviderName
+  type      IntegrationJobType
+  status    IntegrationJobStatus    @default(PENDING)
+  attempts  Int                     @default(0)
+  lastError String?
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+
+  integrationConfig IntegrationConfig @relation(fields: [provider], references: [provider])
+
+  @@index([provider])
+  @@index([status])
+  @@map("integration_jobs")
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}

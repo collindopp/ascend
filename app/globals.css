@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/*
+ * ASCEND design tokens.
+ * Committed dark theme — the brand identity is precision/exclusivity (Bloomberg-terminal,
+ * not toggleable-SaaS-template), so contrast is tuned for dark surfaces only.
+ */
+:root {
+  --surface-0: #0a0a0b; /* page background */
+  --surface-1: #131316; /* card / panel */
+  --surface-2: #1b1b1f; /* hover / elevated */
+  --surface-3: #232327; /* active / pressed */
+
+  --border-subtle: #202023;
+  --border: #2c2c31;
+  --border-strong: #3a3a40;
+
+  --text-primary: #f5f5f7;
+  --text-secondary: #a1a1a8;
+  --text-tertiary: #6b6b72;
+  --text-disabled: #4a4a4f;
+
+  --accent: #3ecf8e;
+  --accent-strong: #2bb578;
+  --accent-muted: rgba(62, 207, 142, 0.12);
+  --accent-border: rgba(62, 207, 142, 0.28);
+
+  --danger: #e5484d;
+  --danger-muted: rgba(229, 72, 77, 0.12);
+  --danger-border: rgba(229, 72, 77, 0.28);
+
+  --warning: #d4a72c;
+  --warning-muted: rgba(212, 167, 44, 0.12);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 420ms;
+}
+
+@theme inline {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+
+  --color-border-subtle: var(--border-subtle);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-disabled: var(--text-disabled);
+
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-muted: var(--accent-muted);
+  --color-accent-border: var(--accent-border);
+
+  --color-danger: var(--danger);
+  --color-danger-muted: var(--danger-muted);
+  --color-danger-border: var(--danger-border);
+
+  --color-warning: var(--warning);
+  --color-warning-muted: var(--warning-muted);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--surface-0);
+  color: var(--text-primary);
+}
+
+/* Tabular figures everywhere numbers appear side by side — metrics must align. */
+.font-mono,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-toast-in {
+  animation: toast-in var(--duration-base) var(--ease-out-expo);
+}
+
+::selection {
+  background: var(--accent-muted);
+  color: var(--text-primary);
+}
+
+/* Scrollbars quiet and unobtrusive, matching the restrained visual language. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}

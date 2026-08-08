@@ -1,0 +1,72 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { startSessionAction } from "@/lib/sessions/actions";
+import { useToast } from "@/components/ui/Toast";
+import { Button } from "@/components/ui/Button";
+import { formatPercent, formatInt } from "@/lib/format/number";
+import type { LeadListWithStats } from "@/lib/lead-lists/queries";
+
+export function LeadListSelector({ leadLists }: { leadLists: LeadListWithStats[] }) {
+  const router = useRouter();
+  const toast = useToast();
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSelect(leadListId: string) {
+    setPendingId(leadListId);
+    startTransition(async () => {
+      const result = await startSessionAction({ leadListId });
+      if (!result.ok) {
+        toast.push({ title: "Couldn't start session", description: result.error, tone: "error" });
+        setPendingId(null);
+        return;
+      }
+      router.push(`/session/${result.data.sessionId}`);
+    });
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {leadLists.map((list) => (
+        <div
+          key={list.id}
+          className="flex flex-col justify-between gap-4 rounded-[var(--radius-lg)] border border-border bg-surface-1 p-5"
+        >
+          <div>
+            <p className="text-sm font-medium text-text-primary">{list.name}</p>
+            <p className="mt-0.5 text-xs text-text-tertiary">
+              {list.source}
+              {list.location ? ` · ${list.location}` : ""}
+            </p>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">Leads</p>
+                <p className="mt-0.5 font-mono text-sm text-text-secondary">
+                  {list.leadCount !== null ? formatInt(list.leadCount) : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">Conv. Rate</p>
+                <p className="mt-0.5 font-mono text-sm text-text-secondary">{formatPercent(list.conversionRate)}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">Set Rate</p>
+                <p className="mt-0.5 font-mono text-sm text-text-secondary">{formatPercent(list.setRate)}</p>
+              </div>
+            </div>
+          </div>
+          <Button
+            onClick={() => handleSelect(list.id)}
+            disabled={isPending}
+            variant="secondary"
+            className="w-full"
+          >
+            {isPending && pendingId === list.id ? "Starting…" : "Start session"}
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+}
