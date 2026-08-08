@@ -1,5 +1,0 @@
-[build]
-  command = "npm run build"
-
-# Netlify auto-detects Next.js and applies its Next.js Runtime (@netlify/plugin-nextjs)
-# for SSR, Server Actions, and route handlers — no publish dir override needed.
