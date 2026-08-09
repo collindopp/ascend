@@ -10,7 +10,8 @@ const NAV_ITEMS = [
 ];
 
 export default async function SetterLayout({ children }: { children: React.ReactNode }) {
-  const user = await requirePageRole(["SETTER"]);
+  // Admins can also use the calling/tally flow themselves, not just view analytics.
+  const user = await requirePageRole(["SETTER", "ADMIN"]);
 
   return (
     <NavShell

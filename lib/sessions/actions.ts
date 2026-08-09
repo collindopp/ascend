@@ -28,7 +28,7 @@ function fieldForEventType(type: TappableEventType): CounterField {
 
 /** Starts a new calling session. Fails cleanly if the setter already has one active (section 8). */
 export async function startSessionAction(input: unknown): Promise<ActionResult<{ sessionId: string }>> {
-  const user = await requireActionRole(["SETTER"]);
+  const user = await requireActionRole(["SETTER", "ADMIN"]);
 
   const { allowed } = checkRateLimit(`start-session:${user.id}`, { windowMs: 60_000, max: 10 });
   if (!allowed) return { ok: false, error: "Too many attempts. Wait a moment and try again." };
@@ -70,7 +70,7 @@ export async function startSessionAction(input: unknown): Promise<ActionResult<{
 
 /** Records one conversation/appointment/DQ/wrong-number tap. Returns the authoritative updated counts. */
 export async function recordEventAction(input: unknown): Promise<ActionResult<SessionCounts>> {
-  const user = await requireActionRole(["SETTER"]);
+  const user = await requireActionRole(["SETTER", "ADMIN"]);
   const parsed = recordEventSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request." };
 
@@ -106,7 +106,7 @@ export async function recordEventAction(input: unknown): Promise<ActionResult<Se
 export async function undoLastEventAction(
   input: unknown,
 ): Promise<ActionResult<SessionCounts & { undone: string | null }>> {
-  const user = await requireActionRole(["SETTER"]);
+  const user = await requireActionRole(["SETTER", "ADMIN"]);
   const parsed = sessionIdSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request." };
 
@@ -150,7 +150,7 @@ export async function undoLastEventAction(
 
 /** Ends the active session and rebuilds its daily aggregate bucket. */
 export async function endSessionAction(input: unknown): Promise<ActionResult> {
-  const user = await requireActionRole(["SETTER"]);
+  const user = await requireActionRole(["SETTER", "ADMIN"]);
   const parsed = sessionIdSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request." };
 
