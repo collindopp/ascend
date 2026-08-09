@@ -3,6 +3,7 @@ import Link from "next/link";
 import { NavLinks, type NavItem } from "@/components/ui/NavLinks";
 import { MobileTabBar } from "@/components/ui/MobileTabBar";
 import { LogoutButton } from "@/components/ui/LogoutButton";
+import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils/cn";
 
 interface NavShellProps {
@@ -28,8 +29,8 @@ export function NavShell({ items, roleLabel, userName, children, variant = "top"
       <header className="sticky top-0 z-40 border-b border-border-subtle bg-surface-0/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-sm font-semibold tracking-[0.2em] text-text-primary">
-              ASCEND
+            <Link href="/" className="text-text-primary" aria-label="ASCEND home">
+              <Logo className="h-4 w-auto" />
             </Link>
             <nav className="hidden md:block">
               <NavLinks items={items} />
