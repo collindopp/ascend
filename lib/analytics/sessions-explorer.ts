@@ -10,12 +10,16 @@ export interface SessionExplorerFilters {
   pageSize: number;
 }
 
-export async function getSessionsList(filters: SessionExplorerFilters) {
-  const where = {
+function buildWhere(filters: Pick<SessionExplorerFilters, "range" | "setterId" | "leadListId">) {
+  return {
     startedAt: { gte: filters.range.start, lte: filters.range.end },
     ...(filters.setterId ? { setterId: filters.setterId } : {}),
     ...(filters.leadListId ? { leadListId: filters.leadListId } : {}),
   };
+}
+
+export async function getSessionsList(filters: SessionExplorerFilters) {
+  const where = buildWhere(filters);
 
   const [rows, total] = await Promise.all([
     prisma.callingSession.findMany({
@@ -29,6 +33,18 @@ export async function getSessionsList(filters: SessionExplorerFilters) {
   ]);
 
   return { rows, total, pageCount: Math.max(1, Math.ceil(total / filters.pageSize)) };
+}
+
+const EXPORT_ROW_CAP = 20_000;
+
+/** Unpaginated — for CSV export, capped well above any realistic internal-team volume. */
+export async function getSessionsForExport(filters: Pick<SessionExplorerFilters, "range" | "setterId" | "leadListId">) {
+  return prisma.callingSession.findMany({
+    where: buildWhere(filters),
+    include: { setter: { select: { id: true, name: true } }, leadList: { select: { id: true, name: true } } },
+    orderBy: { startedAt: "desc" },
+    take: EXPORT_ROW_CAP,
+  });
 }
 
 export async function getFilterOptions() {

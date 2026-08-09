@@ -4,12 +4,17 @@ import { parseRangeParam, DATE_RANGE_LABELS } from "@/lib/utils/date-range";
 import { DateRangeFilter } from "@/components/manager/DateRangeFilter";
 import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LinkButton } from "@/components/ui/LinkButton";
 import { formatInt, formatPercent, formatRate } from "@/lib/format/number";
 
 export default async function SettersPage({ searchParams }: PageProps<"/manager/setters">) {
   const params = await searchParams;
   const { preset, range } = parseRangeParam(params);
   const rows = await getSetterRows(range);
+
+  const exportParams = new URLSearchParams();
+  if (params.range) exportParams.set("range", String(params.range));
+  const exportHref = `/api/export/setters?${exportParams.toString()}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -18,7 +23,12 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
           <h1 className="text-lg font-semibold text-text-primary">Setters</h1>
           <p className="mt-1 text-sm text-text-tertiary">Individual performance — {DATE_RANGE_LABELS[preset]}.</p>
         </div>
-        <DateRangeFilter />
+        <div className="flex items-center gap-2">
+          <LinkButton href={exportHref} size="sm" variant="secondary">
+            Export CSV
+          </LinkButton>
+          <DateRangeFilter />
+        </div>
       </div>
 
       {rows.length === 0 ? (

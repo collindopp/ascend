@@ -5,12 +5,17 @@ import { DateRangeFilter } from "@/components/manager/DateRangeFilter";
 import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LinkButton } from "@/components/ui/LinkButton";
 import { formatInt, formatPercent } from "@/lib/format/number";
 
 export default async function LeadIntelligencePage({ searchParams }: PageProps<"/manager/lead-intelligence">) {
   const params = await searchParams;
   const { preset, range } = parseRangeParam(params);
   const rows = await getLeadListRows(range);
+
+  const exportParams = new URLSearchParams();
+  if (params.range) exportParams.set("range", String(params.range));
+  const exportHref = `/api/export/lead-lists?${exportParams.toString()}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -21,7 +26,12 @@ export default async function LeadIntelligencePage({ searchParams }: PageProps<"
             Ranked by set rate — {DATE_RANGE_LABELS[preset]}. Lists with too few conversations to rank reliably are sorted by volume instead.
           </p>
         </div>
-        <DateRangeFilter />
+        <div className="flex items-center gap-2">
+          <LinkButton href={exportHref} size="sm" variant="secondary">
+            Export CSV
+          </LinkButton>
+          <DateRangeFilter />
+        </div>
       </div>
 
       {rows.length === 0 ? (

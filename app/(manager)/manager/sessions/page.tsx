@@ -7,6 +7,7 @@ import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from 
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
+import { LinkButton } from "@/components/ui/LinkButton";
 import { formatInt, formatDurationCompact } from "@/lib/format/number";
 
 const PAGE_SIZE = 25;
@@ -17,6 +18,12 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
   const setterId = typeof params.setter === "string" ? params.setter : undefined;
   const leadListId = typeof params.leadList === "string" ? params.leadList : undefined;
   const page = Math.max(1, Number(Array.isArray(params.page) ? params.page[0] : params.page) || 1);
+
+  const exportParams = new URLSearchParams();
+  if (params.range) exportParams.set("range", String(params.range));
+  if (setterId) exportParams.set("setter", setterId);
+  if (leadListId) exportParams.set("leadList", leadListId);
+  const exportHref = `/api/export/sessions?${exportParams.toString()}`;
 
   const [{ rows, total, pageCount }, filterOptions] = await Promise.all([
     getSessionsList({ range, setterId, leadListId, page, pageSize: PAGE_SIZE }),
@@ -45,6 +52,9 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
         <div className="flex flex-wrap items-center gap-2">
           <SessionFilters setters={filterOptions.setters} leadLists={filterOptions.leadLists} />
           <DateRangeFilter />
+          <LinkButton href={exportHref} size="sm" variant="secondary">
+            Export CSV
+          </LinkButton>
         </div>
       </div>
 
