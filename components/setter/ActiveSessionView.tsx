@@ -31,6 +31,8 @@ const FIELD_FOR_TYPE: Record<EventType, keyof SessionCounts> = {
   WRONG_NUMBER: "wrongNumber",
 };
 
+type PopKeys = Record<keyof SessionCounts, number>;
+
 export function ActiveSessionView({ sessionId, leadListName, startedAt, initialCounts }: ActiveSessionViewProps) {
   const router = useRouter();
   const toast = useToast();
@@ -38,6 +40,9 @@ export function ActiveSessionView({ sessionId, leadListName, startedAt, initialC
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isEnding, setIsEnding] = useState(false);
   const [isUndoing, setIsUndoing] = useState(false);
+  // Bumped on every tap for a field so its number can remount and replay the
+  // pop animation, even on rapid consecutive taps of the same button.
+  const [popKeys, setPopKeys] = useState<PopKeys>({ conversations: 0, appointments: 0, dq: 0, wrongNumber: 0 });
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -52,6 +57,7 @@ export function ActiveSessionView({ sessionId, leadListName, startedAt, initialC
     (type: EventType) => {
       const field = FIELD_FOR_TYPE[type];
       setCounts((prev) => ({ ...prev, [field]: prev[field] + 1 }));
+      setPopKeys((prev) => ({ ...prev, [field]: prev[field] + 1 }));
 
       startTransition(async () => {
         const result = await recordEventAction({ sessionId, type });
@@ -97,16 +103,42 @@ export function ActiveSessionView({ sessionId, leadListName, startedAt, initialC
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 animate-fade-in-up">
       <div>
         <p className="text-xs font-medium uppercase tracking-wider text-text-tertiary">{leadListName}</p>
       </div>
 
-      <MetricDisplay label="Session Time" value={formatDuration(elapsedSeconds)} size="xl" />
+      <MetricDisplay
+        label={
+          <span className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-live-pulse" aria-hidden />
+            Session Time
+          </span>
+        }
+        value={formatDuration(elapsedSeconds)}
+        size="xl"
+      />
 
       <div className="grid grid-cols-2 gap-4 border-y border-border-subtle py-5">
-        <MetricDisplay label="Conversations" value={formatInt(counts.conversations)} size="md" />
-        <MetricDisplay label="Appointments" value={formatInt(counts.appointments)} size="md" tone="positive" />
+        <MetricDisplay
+          label="Conversations"
+          value={
+            <span key={popKeys.conversations} className="inline-block animate-counter-pop">
+              {formatInt(counts.conversations)}
+            </span>
+          }
+          size="md"
+        />
+        <MetricDisplay
+          label="Appointments"
+          value={
+            <span key={popKeys.appointments} className="inline-block animate-counter-pop">
+              {formatInt(counts.appointments)}
+            </span>
+          }
+          size="md"
+          tone="positive"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -121,19 +153,26 @@ export function ActiveSessionView({ sessionId, leadListName, startedAt, initialC
       <div className="grid grid-cols-2 gap-3">
         <Button size="lg" variant="secondary" onClick={() => handleTap("DQ")} className="flex-col gap-1">
           <span>DQ</span>
-          <span className="font-mono text-xs text-text-tertiary tabular-nums">{formatInt(counts.dq)}</span>
+          <span key={popKeys.dq} className="inline-block animate-counter-pop font-mono text-xs text-text-tertiary tabular-nums">
+            {formatInt(counts.dq)}
+          </span>
         </Button>
         <Button size="lg" variant="secondary" onClick={() => handleTap("WRONG_NUMBER")} className="flex-col gap-1">
           <span>Wrong Name/Number</span>
-          <span className="font-mono text-xs text-text-tertiary tabular-nums">{formatInt(counts.wrongNumber)}</span>
+          <span
+            key={popKeys.wrongNumber}
+            className="inline-block animate-counter-pop font-mono text-xs text-text-tertiary tabular-nums"
+          >
+            {formatInt(counts.wrongNumber)}
+          </span>
         </Button>
       </div>
 
       <div className="flex items-center justify-between gap-3 pt-2">
-        <Button variant="ghost" size="sm" onClick={handleUndo} disabled={isUndoing}>
+        <Button variant="ghost" size="md" onClick={handleUndo} disabled={isUndoing}>
           {isUndoing ? "Undoing…" : "Undo"}
         </Button>
-        <Button variant="danger" size="sm" onClick={handleEndSession} disabled={isEnding}>
+        <Button variant="danger" size="md" onClick={handleEndSession} disabled={isEnding}>
           {isEnding ? "Ending…" : "End session"}
         </Button>
       </div>

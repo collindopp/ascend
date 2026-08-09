@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { MetricDisplay } from "@/components/ui/MetricDisplay";
+import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
+import { AnimatedRate } from "@/components/ui/AnimatedRate";
 import { Button } from "@/components/ui/Button";
 import { deriveMetrics } from "@/lib/metrics/core";
-import { formatInt, formatPercent, formatRate, formatDurationCompact } from "@/lib/format/number";
+import { formatDurationCompact } from "@/lib/format/number";
 
 interface SessionSummaryProps {
   leadListName: string;
@@ -30,31 +32,65 @@ export function SessionSummary({
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
+      <div className="animate-fade-in-up">
         <p className="text-xs font-medium uppercase tracking-wider text-accent">Session complete</p>
         <p className="mt-1 text-sm text-text-tertiary">
           {leadListName} · {formatDurationCompact(durationSeconds)}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <MetricDisplay label="Conversations" value={formatInt(conversations)} size="lg" />
-        <MetricDisplay label="Appointments" value={formatInt(appointments)} size="lg" tone="positive" />
+      <div className="grid grid-cols-2 gap-4 animate-fade-in-up" style={{ animationDelay: "80ms" }}>
+        <MetricDisplay
+          label="Conversations"
+          value={<AnimatedNumber value={conversations} initialValue={0} durationMs={900} />}
+          size="lg"
+        />
+        <MetricDisplay
+          label="Appointments"
+          value={<AnimatedNumber value={appointments} initialValue={0} durationMs={900} />}
+          size="lg"
+          tone="positive"
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <MetricDisplay label="DQ" value={formatInt(dq)} size="md" tone="muted" />
-        <MetricDisplay label="Wrong Name/Number" value={formatInt(wrongNumber)} size="md" tone="muted" />
+      <div className="grid grid-cols-2 gap-4 animate-fade-in-up" style={{ animationDelay: "160ms" }}>
+        <MetricDisplay
+          label="DQ"
+          value={<AnimatedNumber value={dq} initialValue={0} durationMs={900} />}
+          size="md"
+          tone="muted"
+        />
+        <MetricDisplay
+          label="Wrong Name/Number"
+          value={<AnimatedNumber value={wrongNumber} initialValue={0} durationMs={900} />}
+          size="md"
+          tone="muted"
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 border-t border-border-subtle pt-6 sm:grid-cols-4">
-        <MetricDisplay label="Set Rate" value={formatPercent(metrics.setRateFromConversations)} size="sm" />
-        <MetricDisplay label="DQ Rate" value={formatPercent(metrics.dqRate)} size="sm" />
-        <MetricDisplay label="Wrong # Rate" value={formatPercent(metrics.wrongNumberRate)} size="sm" />
-        <MetricDisplay label="Appts / Hour" value={formatRate(metrics.appointmentsPerHour)} size="sm" />
+      <div
+        className="grid grid-cols-2 gap-4 border-t border-border-subtle pt-6 sm:grid-cols-4 animate-fade-in-up"
+        style={{ animationDelay: "240ms" }}
+      >
+        <MetricDisplay
+          label="Set Rate"
+          value={<AnimatedRate metricValue={metrics.setRateFromConversations} formatType="percent" />}
+          size="sm"
+        />
+        <MetricDisplay label="DQ Rate" value={<AnimatedRate metricValue={metrics.dqRate} formatType="percent" />} size="sm" />
+        <MetricDisplay
+          label="Wrong # Rate"
+          value={<AnimatedRate metricValue={metrics.wrongNumberRate} formatType="percent" />}
+          size="sm"
+        />
+        <MetricDisplay
+          label="Appts / Hour"
+          value={<AnimatedRate metricValue={metrics.appointmentsPerHour} formatType="rate" />}
+          size="sm"
+        />
       </div>
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex gap-3 pt-2 animate-fade-in-up" style={{ animationDelay: "320ms" }}>
         <Link href="/home">
           <Button variant="primary">Start another session</Button>
         </Link>

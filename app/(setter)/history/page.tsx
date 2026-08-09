@@ -9,9 +9,11 @@ export default async function HistoryPage() {
 
   return (
     <div>
-      <h1 className="text-lg font-semibold text-text-primary">History</h1>
-      <p className="mt-1 text-sm text-text-tertiary">Your previous calling sessions.</p>
-      <div className="mt-6">
+      <div className="animate-fade-in-up">
+        <h1 className="text-lg font-semibold text-text-primary">History</h1>
+        <p className="mt-1 text-sm text-text-tertiary">Your previous calling sessions.</p>
+      </div>
+      <div className="mt-6 animate-fade-in-up" style={{ animationDelay: "60ms" }}>
         {sessions.length === 0 ? (
           <EmptyState
             title="No calling sessions"

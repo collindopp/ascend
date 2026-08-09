@@ -13,7 +13,12 @@ export default async function SetterLayout({ children }: { children: React.React
   const user = await requirePageRole(["SETTER"]);
 
   return (
-    <NavShell items={NAV_ITEMS} roleLabel={roleLabel(user.role)} userName={user.name ?? user.email ?? ""}>
+    <NavShell
+      items={NAV_ITEMS}
+      roleLabel={roleLabel(user.role)}
+      userName={user.name ?? user.email ?? ""}
+      variant="bottom-tabs"
+    >
       {children}
     </NavShell>
   );

@@ -17,10 +17,12 @@ export default async function HomePage() {
 
   return (
     <div>
-      <h1 className="text-lg font-semibold text-text-primary">Select a lead list</h1>
-      <p className="mt-1 text-sm text-text-tertiary">
-        Choose what you&rsquo;re calling today. You can&rsquo;t switch lists mid-session.
-      </p>
+      <div className="animate-fade-in-up">
+        <h1 className="text-lg font-semibold text-text-primary">Select a lead list</h1>
+        <p className="mt-1 text-sm text-text-tertiary">
+          Choose what you&rsquo;re calling today. You can&rsquo;t switch lists mid-session.
+        </p>
+      </div>
       <div className="mt-6">
         {leadLists.length === 0 ? (
           <EmptyState

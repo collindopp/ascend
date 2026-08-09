@@ -1,15 +1,17 @@
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
 
 type Size = "sm" | "md" | "lg" | "xl";
 type Tone = "default" | "positive" | "muted";
 
 interface MetricDisplayProps {
-  label: string;
-  value: string;
+  label: ReactNode;
+  value: ReactNode;
   size?: Size;
   tone?: Tone;
   sublabel?: string;
   className?: string;
+  valueClassName?: string;
 }
 
 const valueSizeClasses: Record<Size, string> = {
@@ -28,7 +30,8 @@ const toneClasses: Record<Tone, string> = {
 /**
  * The single most important visual primitive in ASCEND: a large, dominant number
  * with a quiet label. Every dashboard metric should compose this rather than
- * inventing its own number/label pairing.
+ * inventing its own number/label pairing. `value` accepts a node (not just a
+ * string) so callers can pass an <AnimatedNumber /> for a live-updating metric.
  */
 export function MetricDisplay({
   label,
@@ -37,6 +40,7 @@ export function MetricDisplay({
   tone = "default",
   sublabel,
   className,
+  valueClassName,
 }: MetricDisplayProps) {
   return (
     <div className={cn("flex flex-col gap-1", className)}>
@@ -48,6 +52,7 @@ export function MetricDisplay({
           "font-mono font-semibold leading-none tabular-nums",
           valueSizeClasses[size],
           toneClasses[tone],
+          valueClassName,
         )}
       >
         {value}

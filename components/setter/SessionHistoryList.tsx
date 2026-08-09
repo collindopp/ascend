@@ -27,16 +27,16 @@ export function SessionHistoryList({ sessions }: { sessions: HistorySessionRow[]
           <Link
             key={session.id}
             href={`/session/${session.id}`}
-            className="flex items-center justify-between gap-4 px-5 py-4 transition-colors duration-[var(--duration-fast)] hover:bg-surface-2/60"
+            className="flex flex-col gap-3 px-5 py-4 transition-colors duration-[var(--duration-fast)] hover:bg-surface-2/60 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
           >
-            <div>
-              <p className="text-sm font-medium text-text-primary">{session.leadListName}</p>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-text-primary">{session.leadListName}</p>
               <p className="mt-0.5 text-xs text-text-tertiary">
                 {session.startedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ·{" "}
                 {formatDurationCompact(durationSeconds)}
               </p>
             </div>
-            <div className="flex items-center gap-5 text-right font-mono text-sm tabular-nums">
+            <div className="grid grid-cols-4 gap-3 text-right font-mono text-sm tabular-nums sm:flex sm:shrink-0 sm:items-center sm:gap-5">
               <div>
                 <p className="text-text-secondary">{formatInt(session.conversations)}</p>
                 <p className="text-[10px] uppercase tracking-wider text-text-tertiary">Conv</p>

@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { formatPercent, formatInt } from "@/lib/format/number";
 import type { LeadListWithStats } from "@/lib/lead-lists/queries";
 
+const MAX_STAGGER_MS = 300;
+
 export function LeadListSelector({ leadLists }: { leadLists: LeadListWithStats[] }) {
   const router = useRouter();
   const toast = useToast();
@@ -29,10 +31,11 @@ export function LeadListSelector({ leadLists }: { leadLists: LeadListWithStats[]
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {leadLists.map((list) => (
+      {leadLists.map((list, i) => (
         <div
           key={list.id}
-          className="flex flex-col justify-between gap-4 rounded-[var(--radius-lg)] border border-border bg-surface-1 p-5"
+          className="flex flex-col justify-between gap-4 rounded-[var(--radius-lg)] border border-border bg-surface-1 p-5 animate-fade-in-up transition-[transform,border-color] duration-[var(--duration-base)] hover:-translate-y-0.5 hover:border-border-strong"
+          style={{ animationDelay: `${Math.min(i * 50, MAX_STAGGER_MS)}ms` }}
         >
           <div>
             <p className="text-sm font-medium text-text-primary">{list.name}</p>
@@ -57,12 +60,7 @@ export function LeadListSelector({ leadLists }: { leadLists: LeadListWithStats[]
               </div>
             </div>
           </div>
-          <Button
-            onClick={() => handleSelect(list.id)}
-            disabled={isPending}
-            variant="secondary"
-            className="w-full"
-          >
+          <Button onClick={() => handleSelect(list.id)} disabled={isPending} variant="primary" className="w-full">
             {isPending && pendingId === list.id ? "Starting…" : "Start session"}
           </Button>
         </div>
