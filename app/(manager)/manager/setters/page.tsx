@@ -28,11 +28,11 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
           <TableHead>
             <tr>
               <TableHeadCell>Setter</TableHeadCell>
-              <TableHeadCell>Dials</TableHeadCell>
               <TableHeadCell>Conversations</TableHeadCell>
               <TableHeadCell>Appointments</TableHeadCell>
-              <TableHeadCell>Conv. Rate</TableHeadCell>
               <TableHeadCell>Set Rate</TableHeadCell>
+              <TableHeadCell>DQ Rate</TableHeadCell>
+              <TableHeadCell>Wrong # Rate</TableHeadCell>
               <TableHeadCell>Appts / Hour</TableHeadCell>
             </tr>
           </TableHead>
@@ -44,11 +44,11 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
                     {row.name}
                   </Link>
                 </TableCell>
-                <TableCell className="font-mono tabular-nums">{formatInt(row.dials)}</TableCell>
                 <TableCell className="font-mono tabular-nums">{formatInt(row.conversations)}</TableCell>
                 <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.appointments)}</TableCell>
-                <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.conversionRate)}</TableCell>
                 <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.setRateFromConversations)}</TableCell>
+                <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.dqRate)}</TableCell>
+                <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.wrongNumberRate)}</TableCell>
                 <TableCell className="font-mono tabular-nums">{formatRate(row.metrics.appointmentsPerHour)}</TableCell>
               </TableRow>
             ))}

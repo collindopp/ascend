@@ -33,7 +33,13 @@ export async function getSessionsList(filters: SessionExplorerFilters) {
 
 export async function getFilterOptions() {
   const [setters, leadLists] = await Promise.all([
-    prisma.user.findMany({ where: { role: "SETTER" }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    // Admins can tally their own calls too (see the (setter) layout), so they
+    // need to be filterable here as well — not just plain SETTER accounts.
+    prisma.user.findMany({
+      where: { role: { in: ["SETTER", "ADMIN"] } },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
     prisma.leadList.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
   return { setters, leadLists };

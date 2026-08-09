@@ -61,8 +61,10 @@ export async function getMatrixData(range: DateRange, kpi: MatrixKpi) {
   const rows = await fetchSessionsInRange(range);
   const cells = groupByCell(rows);
 
+  // Admins can tally their own calls too (see the (setter) layout), so they
+  // need a column here as well — not just plain SETTER accounts.
   const setters = await prisma.user.findMany({
-    where: { role: "SETTER", active: true },
+    where: { role: { in: ["SETTER", "ADMIN"] }, active: true },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
