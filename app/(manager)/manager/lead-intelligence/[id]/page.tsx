@@ -28,11 +28,17 @@ export default async function LeadListDetailPage({ params, searchParams }: PageP
         <DateRangeFilter />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <MetricDisplay label="Dials" value={formatInt(detail.totals.dials)} size="lg" />
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <MetricDisplay label="Conversations" value={formatInt(detail.totals.conversations)} size="lg" />
         <MetricDisplay label="Appointments" value={formatInt(detail.totals.appointments)} size="lg" tone="positive" />
         <MetricDisplay label="Set Rate" value={formatPercent(detail.metrics.setRateFromConversations)} size="lg" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <MetricDisplay label="DQ" value={formatInt(detail.totals.dq)} size="md" tone="muted" />
+        <MetricDisplay label="Wrong Name/Number" value={formatInt(detail.totals.wrongNumber)} size="md" tone="muted" />
+        <MetricDisplay label="DQ Rate" value={formatPercent(detail.metrics.dqRate)} size="md" />
+        <MetricDisplay label="Wrong # Rate" value={formatPercent(detail.metrics.wrongNumberRate)} size="md" />
       </div>
 
       <Card>

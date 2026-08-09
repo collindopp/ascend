@@ -7,9 +7,10 @@ interface HistorySessionRow {
   leadListName: string;
   startedAt: Date;
   endedAt: Date | null;
-  dials: number;
   conversations: number;
   appointments: number;
+  dq: number;
+  wrongNumber: number;
 }
 
 export function SessionHistoryList({ sessions }: { sessions: HistorySessionRow[] }) {
@@ -20,6 +21,7 @@ export function SessionHistoryList({ sessions }: { sessions: HistorySessionRow[]
           ? Math.max(0, Math.round((session.endedAt.getTime() - session.startedAt.getTime()) / 1000))
           : 0;
         const setRate = setRateFromConversations(session.appointments, session.conversations);
+        const flagged = session.dq + session.wrongNumber;
 
         return (
           <Link
@@ -36,16 +38,16 @@ export function SessionHistoryList({ sessions }: { sessions: HistorySessionRow[]
             </div>
             <div className="flex items-center gap-5 text-right font-mono text-sm tabular-nums">
               <div>
-                <p className="text-text-secondary">{formatInt(session.dials)}</p>
-                <p className="text-[10px] uppercase tracking-wider text-text-tertiary">Dials</p>
-              </div>
-              <div>
                 <p className="text-text-secondary">{formatInt(session.conversations)}</p>
                 <p className="text-[10px] uppercase tracking-wider text-text-tertiary">Conv</p>
               </div>
               <div>
                 <p className="text-text-secondary">{formatInt(session.appointments)}</p>
                 <p className="text-[10px] uppercase tracking-wider text-text-tertiary">Appt</p>
+              </div>
+              <div>
+                <p className="text-text-secondary">{formatInt(flagged)}</p>
+                <p className="text-[10px] uppercase tracking-wider text-text-tertiary">Flagged</p>
               </div>
               <div>
                 <p className="text-accent">{formatPercent(setRate)}</p>

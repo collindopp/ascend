@@ -25,17 +25,17 @@ export default async function SetterDetailPage({ params, searchParams }: PagePro
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <MetricDisplay label="Dials" value={formatInt(detail.totals.dials)} size="lg" />
         <MetricDisplay label="Conversations" value={formatInt(detail.totals.conversations)} size="lg" />
         <MetricDisplay label="Appointments" value={formatInt(detail.totals.appointments)} size="lg" tone="positive" />
         <MetricDisplay label="Set Rate" value={formatPercent(detail.metrics.setRateFromConversations)} size="lg" />
+        <MetricDisplay label="Appointments / Hour" value={formatRate(detail.metrics.appointmentsPerHour)} size="lg" />
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <MetricDisplay label="Conv. Rate" value={formatPercent(detail.metrics.conversionRate)} size="sm" />
-        <MetricDisplay label="Dials / Hour" value={formatRate(detail.metrics.dialsPerHour)} size="sm" />
-        <MetricDisplay label="Conversations / Hour" value={formatRate(detail.metrics.conversationsPerHour)} size="sm" />
-        <MetricDisplay label="Appointments / Hour" value={formatRate(detail.metrics.appointmentsPerHour)} size="sm" />
+        <MetricDisplay label="DQ" value={formatInt(detail.totals.dq)} size="sm" tone="muted" />
+        <MetricDisplay label="Wrong #" value={formatInt(detail.totals.wrongNumber)} size="sm" tone="muted" />
+        <MetricDisplay label="DQ Rate" value={formatPercent(detail.metrics.dqRate)} size="sm" />
+        <MetricDisplay label="Wrong # Rate" value={formatPercent(detail.metrics.wrongNumberRate)} size="sm" />
       </div>
 
       <Card>

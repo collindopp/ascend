@@ -1,4 +1,4 @@
-import { getMatrixData, MATRIX_KPIS, MATRIX_KPI_LABELS, type MatrixKpi } from "@/lib/analytics/matrix";
+import { getMatrixData, MATRIX_KPIS, MATRIX_KPI_LABELS, MATRIX_INVERSE_KPIS, type MatrixKpi } from "@/lib/analytics/matrix";
 import { parseRangeParam, DATE_RANGE_LABELS } from "@/lib/utils/date-range";
 import { DateRangeFilter } from "@/components/manager/DateRangeFilter";
 import { KpiSelect } from "@/components/manager/KpiSelect";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils/cn";
 
 function formatValue(kpi: MatrixKpi, value: number | null): string {
   if (value === null) return "—";
-  if (kpi === "setRate" || kpi === "conversionRate") return formatPercent(value);
+  if (kpi === "setRate" || kpi === "dqRate" || kpi === "wrongNumberRate") return formatPercent(value);
   if (kpi === "appointments") return formatInt(value);
   return formatRate(value);
 }
@@ -18,6 +18,7 @@ export default async function MatrixPage({ searchParams }: PageProps<"/manager/m
   const { preset, range } = parseRangeParam(params);
   const rawKpi = Array.isArray(params.kpi) ? params.kpi[0] : params.kpi;
   const kpi: MatrixKpi = (MATRIX_KPIS as readonly string[]).includes(rawKpi ?? "") ? (rawKpi as MatrixKpi) : "setRate";
+  const isInverse = MATRIX_INVERSE_KPIS.has(kpi);
 
   const { setters, grid } = await getMatrixData(range, kpi);
 
@@ -71,13 +72,14 @@ export default async function MatrixPage({ searchParams }: PageProps<"/manager/m
                   </td>
                   {row.values.map((cell) => {
                     const t = intensity(cell.value);
+                    const heatColor = isInverse ? "var(--danger)" : "var(--accent)";
                     return (
                       <td
                         key={cell.setterId}
                         className="px-4 py-3 text-right font-mono tabular-nums"
                         style={
                           cell.value !== null
-                            ? { backgroundColor: `color-mix(in oklab, var(--accent) ${Math.round(t * 35)}%, transparent)` }
+                            ? { backgroundColor: `color-mix(in oklab, ${heatColor} ${Math.round(t * 35)}%, transparent)` }
                             : undefined
                         }
                       >

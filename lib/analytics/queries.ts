@@ -12,6 +12,8 @@ export interface SessionRow {
   dials: number;
   conversations: number;
   appointments: number;
+  dq: number;
+  wrongNumber: number;
   status: "ACTIVE" | "COMPLETED";
   startedAt: Date;
   endedAt: Date | null;
@@ -44,6 +46,8 @@ export async function fetchSessionsInRange(range: DateRange, teamId?: string): P
     dials: s.dials,
     conversations: s.conversations,
     appointments: s.appointments,
+    dq: s.dq,
+    wrongNumber: s.wrongNumber,
     status: s.status,
     startedAt: s.startedAt,
     endedAt: s.endedAt,
@@ -69,12 +73,16 @@ export function groupBy(rows: SessionRow[], key: "setterId" | "leadListId"): Gro
       dials: 0,
       conversations: 0,
       appointments: 0,
+      dq: 0,
+      wrongNumber: 0,
       durationSeconds: 0,
       sessionsCount: 0,
     };
     existing.dials += row.dials;
     existing.conversations += row.conversations;
     existing.appointments += row.appointments;
+    existing.dq += row.dq;
+    existing.wrongNumber += row.wrongNumber;
     existing.durationSeconds += row.durationSeconds;
     existing.sessionsCount += 1;
     map.set(id, existing);
@@ -102,11 +110,15 @@ export function groupByCell(rows: SessionRow[]): MatrixCell[] {
       dials: 0,
       conversations: 0,
       appointments: 0,
+      dq: 0,
+      wrongNumber: 0,
       durationSeconds: 0,
     };
     existing.dials += row.dials;
     existing.conversations += row.conversations;
     existing.appointments += row.appointments;
+    existing.dq += row.dq;
+    existing.wrongNumber += row.wrongNumber;
     existing.durationSeconds += row.durationSeconds;
     map.set(key, existing);
   }

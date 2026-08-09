@@ -49,10 +49,34 @@ export function perHour(count: number, durationSeconds: number): number | null {
   return safeDivide(count, hours);
 }
 
+/**
+ * Every worked lead resolves to exactly one outcome: a logged conversation,
+ * a DQ, or a wrong number (an appointment is an *additional* tap on top of
+ * an existing conversation, not a separate outcome — so it's excluded here
+ * to avoid double-counting the same lead).
+ */
+export function outcomesWorked(conversations: number, dq: number, wrongNumber: number): number {
+  return conversations + dq + wrongNumber;
+}
+
+/** DQ ÷ (Conversations + DQ + Wrong#) × 100 — disqualified share of worked leads, a list-quality signal */
+export function dqRate(dq: number, conversations: number, wrongNumber: number): number | null {
+  const rate = safeDivide(dq, outcomesWorked(conversations, dq, wrongNumber));
+  return rate === null ? null : rate * 100;
+}
+
+/** Wrong# ÷ (Conversations + DQ + Wrong#) × 100 — bad-contact-info share of worked leads, a list-quality signal */
+export function wrongNumberRate(wrongNumber: number, conversations: number, dq: number): number | null {
+  const rate = safeDivide(wrongNumber, outcomesWorked(conversations, dq, wrongNumber));
+  return rate === null ? null : rate * 100;
+}
+
 export interface RawTotals {
   dials: number;
   conversations: number;
   appointments: number;
+  dq: number;
+  wrongNumber: number;
   durationSeconds: number;
 }
 
@@ -65,6 +89,8 @@ export interface DerivedMetrics {
   dialsPerHour: number | null;
   conversationsPerHour: number | null;
   appointmentsPerHour: number | null;
+  dqRate: number | null;
+  wrongNumberRate: number | null;
 }
 
 /** Computes the full standard metric set from a raw totals bucket in one call. */
@@ -78,6 +104,8 @@ export function deriveMetrics(totals: RawTotals): DerivedMetrics {
     dialsPerHour: perHour(totals.dials, totals.durationSeconds),
     conversationsPerHour: perHour(totals.conversations, totals.durationSeconds),
     appointmentsPerHour: perHour(totals.appointments, totals.durationSeconds),
+    dqRate: dqRate(totals.dq, totals.conversations, totals.wrongNumber),
+    wrongNumberRate: wrongNumberRate(totals.wrongNumber, totals.conversations, totals.dq),
   };
 }
 
@@ -87,8 +115,10 @@ export function sumTotals(rows: RawTotals[]): RawTotals {
       dials: acc.dials + row.dials,
       conversations: acc.conversations + row.conversations,
       appointments: acc.appointments + row.appointments,
+      dq: acc.dq + row.dq,
+      wrongNumber: acc.wrongNumber + row.wrongNumber,
       durationSeconds: acc.durationSeconds + row.durationSeconds,
     }),
-    { dials: 0, conversations: 0, appointments: 0, durationSeconds: 0 },
+    { dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 },
   );
 }

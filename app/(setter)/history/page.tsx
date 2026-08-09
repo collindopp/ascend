@@ -24,9 +24,10 @@ export default async function HistoryPage() {
               leadListName: s.leadList.name,
               startedAt: s.startedAt,
               endedAt: s.endedAt,
-              dials: s.dials,
               conversations: s.conversations,
               appointments: s.appointments,
+              dq: s.dq,
+              wrongNumber: s.wrongNumber,
             }))}
           />
         )}

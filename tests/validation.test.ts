@@ -20,10 +20,15 @@ describe("loginSchema", () => {
 });
 
 describe("recordEventSchema", () => {
-  it("only accepts the three known event types", () => {
-    expect(recordEventSchema.safeParse({ sessionId: "s1", type: "DIAL" }).success).toBe(true);
+  it("only accepts the four tappable event types", () => {
     expect(recordEventSchema.safeParse({ sessionId: "s1", type: "CONVERSATION" }).success).toBe(true);
     expect(recordEventSchema.safeParse({ sessionId: "s1", type: "APPOINTMENT" }).success).toBe(true);
+    expect(recordEventSchema.safeParse({ sessionId: "s1", type: "DQ" }).success).toBe(true);
+    expect(recordEventSchema.safeParse({ sessionId: "s1", type: "WRONG_NUMBER" }).success).toBe(true);
+  });
+
+  it("rejects DIAL — dials come from the external dialer, never a manual tap", () => {
+    expect(recordEventSchema.safeParse({ sessionId: "s1", type: "DIAL" }).success).toBe(false);
   });
 
   it("rejects an arbitrary client-supplied event type — never trust the client (section 30)", () => {
@@ -32,7 +37,7 @@ describe("recordEventSchema", () => {
   });
 
   it("rejects a missing sessionId", () => {
-    expect(recordEventSchema.safeParse({ type: "DIAL" }).success).toBe(false);
+    expect(recordEventSchema.safeParse({ type: "CONVERSATION" }).success).toBe(false);
   });
 });
 

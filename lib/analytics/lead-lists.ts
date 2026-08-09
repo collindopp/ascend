@@ -2,7 +2,7 @@ import "server-only";
 import { subDays, startOfDay, format } from "date-fns";
 import { prisma } from "@/lib/db/client";
 import { deriveMetrics, setRateFromConversations, sumTotals } from "@/lib/metrics/core";
-import { meetsSetRateThreshold, meetsConversionRateThreshold } from "@/lib/metrics/thresholds";
+import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 import { fetchSessionsInRange, groupBy } from "@/lib/analytics/queries";
 import type { DateRange } from "@/lib/utils/date-range";
 
@@ -65,7 +65,7 @@ export async function getLeadListDetail(leadListId: string, range: DateRange) {
     leadList,
     totals,
     metrics,
-    rankEligible: meetsConversionRateThreshold(totals.dials),
+    rankEligible: meetsSetRateThreshold(totals.conversations),
     bySetter,
     dailyTrend,
   };

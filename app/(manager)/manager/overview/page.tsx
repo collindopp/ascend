@@ -25,20 +25,21 @@ export default async function OverviewPage({ searchParams }: PageProps<"/manager
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <MetricDisplay label="Total Dials" value={formatInt(data.totals.dials)} size="lg" />
         <MetricDisplay label="Total Conversations" value={formatInt(data.totals.conversations)} size="lg" />
         <MetricDisplay label="Total Appointments" value={formatInt(data.totals.appointments)} size="lg" tone="positive" />
-        <MetricDisplay label="Active Sessions Now" value={formatInt(data.activeSessionsCount)} size="lg" />
+        <MetricDisplay label="Total DQ" value={formatInt(data.totals.dq)} size="lg" tone="muted" />
+        <MetricDisplay label="Total Wrong #" value={formatInt(data.totals.wrongNumber)} size="lg" tone="muted" />
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <MetricDisplay label="Team Conv. Rate" value={formatPercent(data.metrics.conversionRate)} size="sm" />
         <MetricDisplay label="Team Set Rate" value={formatPercent(data.metrics.setRateFromConversations)} size="sm" />
-        <MetricDisplay label="Dials / Hour" value={formatRate(data.metrics.dialsPerHour)} size="sm" />
+        <MetricDisplay label="Team DQ Rate" value={formatPercent(data.metrics.dqRate)} size="sm" />
+        <MetricDisplay label="Team Wrong # Rate" value={formatPercent(data.metrics.wrongNumberRate)} size="sm" />
         <MetricDisplay label="Appointments / Hour" value={formatRate(data.metrics.appointmentsPerHour)} size="sm" />
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <MetricDisplay label="Active Sessions Now" value={formatInt(data.activeSessionsCount)} size="sm" tone="muted" />
         <MetricDisplay label="Setters Active" value={formatInt(data.settersActiveInRange)} size="sm" tone="muted" />
         <MetricDisplay label="Sessions" value={formatInt(data.sessionsCount)} size="sm" tone="muted" />
       </div>

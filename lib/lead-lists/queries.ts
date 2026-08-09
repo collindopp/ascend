@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
-import { conversionRate, setRateFromConversations } from "@/lib/metrics/core";
+import { setRateFromConversations, dqRate } from "@/lib/metrics/core";
 import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 
 export interface LeadListWithStats {
@@ -9,8 +9,8 @@ export interface LeadListWithStats {
   source: string;
   location: string | null;
   leadCount: number | null;
-  conversionRate: number | null;
   setRate: number | null;
+  dqRate: number | null;
   hasHistory: boolean;
 }
 
@@ -29,15 +29,17 @@ export async function getActiveLeadListsWithStats(): Promise<LeadListWithStats[]
   const totals = await prisma.callingSession.groupBy({
     by: ["leadListId"],
     where: { status: "COMPLETED", leadListId: { in: lists.map((l) => l.id) } },
-    _sum: { dials: true, conversations: true, appointments: true },
+    _sum: { conversations: true, appointments: true, dq: true, wrongNumber: true },
   });
   const totalsByList = new Map(totals.map((t) => [t.leadListId, t._sum]));
 
   return lists.map((list) => {
     const sum = totalsByList.get(list.id);
-    const dials = sum?.dials ?? 0;
     const conversations = sum?.conversations ?? 0;
     const appointments = sum?.appointments ?? 0;
+    const dq = sum?.dq ?? 0;
+    const wrongNumber = sum?.wrongNumber ?? 0;
+    const outcomesWorked = conversations + dq + wrongNumber;
     const hasEnoughHistory = meetsSetRateThreshold(conversations);
 
     return {
@@ -46,9 +48,9 @@ export async function getActiveLeadListsWithStats(): Promise<LeadListWithStats[]
       source: list.source,
       location: list.location,
       leadCount: list.leadCount,
-      conversionRate: dials > 0 ? conversionRate(conversations, dials) : null,
       setRate: hasEnoughHistory ? setRateFromConversations(appointments, conversations) : null,
-      hasHistory: dials > 0,
+      dqRate: outcomesWorked > 0 ? dqRate(dq, conversations, wrongNumber) : null,
+      hasHistory: outcomesWorked > 0,
     };
   });
 }

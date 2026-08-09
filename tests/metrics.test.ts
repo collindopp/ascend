@@ -6,6 +6,9 @@ import {
   dialsPerAppointment,
   conversationsPerAppointment,
   perHour,
+  dqRate,
+  wrongNumberRate,
+  outcomesWorked,
   deriveMetrics,
   sumTotals,
 } from "@/lib/metrics/core";
@@ -76,19 +79,41 @@ describe("perHour", () => {
   });
 });
 
+describe("outcomesWorked", () => {
+  it("sums conversations, DQ, and wrong-number — but never double-counts appointments", () => {
+    // An appointment is an extra tap on an already-logged conversation, not a distinct outcome.
+    expect(outcomesWorked(50, 8, 4)).toBe(62);
+  });
+});
+
+describe("dqRate / wrongNumberRate", () => {
+  it("computes each as a share of total worked leads (conversations + DQ + wrong#)", () => {
+    // 62 total worked: 50 conversations, 8 DQ, 4 wrong#
+    expect(dqRate(8, 50, 4)).toBeCloseTo((8 / 62) * 100, 5);
+    expect(wrongNumberRate(4, 50, 8)).toBeCloseTo((4 / 62) * 100, 5);
+  });
+
+  it("returns null when nothing has been worked yet", () => {
+    expect(dqRate(0, 0, 0)).toBeNull();
+    expect(wrongNumberRate(0, 0, 0)).toBeNull();
+  });
+});
+
 describe("deriveMetrics", () => {
   it("computes the full standard metric set from raw totals", () => {
-    const metrics = deriveMetrics({ dials: 427, conversations: 71, appointments: 11, durationSeconds: 3600 });
+    const metrics = deriveMetrics({ dials: 427, conversations: 71, appointments: 11, dq: 9, wrongNumber: 5, durationSeconds: 3600 });
     expect(metrics.conversionRate).toBeCloseTo(16.62, 1);
     expect(metrics.setRateFromConversations).toBeCloseTo(15.49, 1);
     expect(metrics.setRateFromDials).toBeCloseTo(2.58, 1);
     expect(metrics.dialsPerHour).toBeCloseTo(427, 5);
     expect(metrics.conversationsPerHour).toBeCloseTo(71, 5);
     expect(metrics.appointmentsPerHour).toBeCloseTo(11, 5);
+    expect(metrics.dqRate).toBeCloseTo((9 / 85) * 100, 5);
+    expect(metrics.wrongNumberRate).toBeCloseTo((5 / 85) * 100, 5);
   });
 
   it("returns all nulls for a completely empty session — never partial garbage", () => {
-    const metrics = deriveMetrics({ dials: 0, conversations: 0, appointments: 0, durationSeconds: 0 });
+    const metrics = deriveMetrics({ dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 });
     expect(metrics.conversionRate).toBeNull();
     expect(metrics.setRateFromConversations).toBeNull();
     expect(metrics.setRateFromDials).toBeNull();
@@ -97,19 +122,21 @@ describe("deriveMetrics", () => {
     expect(metrics.dialsPerHour).toBeNull();
     expect(metrics.conversationsPerHour).toBeNull();
     expect(metrics.appointmentsPerHour).toBeNull();
+    expect(metrics.dqRate).toBeNull();
+    expect(metrics.wrongNumberRate).toBeNull();
   });
 });
 
 describe("sumTotals", () => {
   it("sums raw totals across multiple rows", () => {
     const totals = sumTotals([
-      { dials: 10, conversations: 2, appointments: 1, durationSeconds: 600 },
-      { dials: 20, conversations: 4, appointments: 2, durationSeconds: 1200 },
+      { dials: 10, conversations: 2, appointments: 1, dq: 1, wrongNumber: 0, durationSeconds: 600 },
+      { dials: 20, conversations: 4, appointments: 2, dq: 0, wrongNumber: 1, durationSeconds: 1200 },
     ]);
-    expect(totals).toEqual({ dials: 30, conversations: 6, appointments: 3, durationSeconds: 1800 });
+    expect(totals).toEqual({ dials: 30, conversations: 6, appointments: 3, dq: 1, wrongNumber: 1, durationSeconds: 1800 });
   });
 
   it("returns all zeros for an empty list", () => {
-    expect(sumTotals([])).toEqual({ dials: 0, conversations: 0, appointments: 0, durationSeconds: 0 });
+    expect(sumTotals([])).toEqual({ dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 });
   });
 });

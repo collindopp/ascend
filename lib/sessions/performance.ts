@@ -27,6 +27,8 @@ export async function getPersonalPerformance(setterId: string): Promise<Personal
       dials: a.dials,
       conversations: a.conversations,
       appointments: a.appointments,
+      dq: a.dq,
+      wrongNumber: a.wrongNumber,
       durationSeconds: a.durationSeconds,
     })),
   );

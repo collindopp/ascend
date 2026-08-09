@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
   meetsSetRateThreshold,
-  meetsConversionRateThreshold,
   meetsHourlyRankingThreshold,
+  meetsQualityRankingThreshold,
   MIN_CONVERSATIONS_FOR_SET_RATE_RANKING,
-  MIN_DIALS_FOR_CONVERSION_RANKING,
+  MIN_HOURS_FOR_HOURLY_RANKING,
+  MIN_OUTCOMES_FOR_QUALITY_RANKING,
 } from "@/lib/metrics/thresholds";
 
 describe("ranking thresholds", () => {
@@ -23,13 +24,18 @@ describe("ranking thresholds", () => {
     expect(meetsSetRateThreshold(MIN_CONVERSATIONS_FOR_SET_RATE_RANKING - 1)).toBe(false);
   });
 
-  it("gates conversion-rate ranking on dial volume", () => {
-    expect(meetsConversionRateThreshold(MIN_DIALS_FOR_CONVERSION_RANKING)).toBe(true);
-    expect(meetsConversionRateThreshold(MIN_DIALS_FOR_CONVERSION_RANKING - 1)).toBe(false);
+  it("gates hourly-rate ranking on session-hours worked, not dial volume", () => {
+    expect(meetsHourlyRankingThreshold(0)).toBe(false);
+    expect(meetsHourlyRankingThreshold(MIN_HOURS_FOR_HOURLY_RANKING * 3600)).toBe(true);
+    expect(meetsHourlyRankingThreshold(MIN_HOURS_FOR_HOURLY_RANKING * 3600 - 1)).toBe(false);
   });
 
-  it("gates hourly-rate ranking the same way", () => {
-    expect(meetsHourlyRankingThreshold(0)).toBe(false);
-    expect(meetsHourlyRankingThreshold(1000)).toBe(true);
+  it("gates DQ/wrong-number ranking on total worked-lead volume", () => {
+    // 20 conversations + 5 DQ + 4 wrong# = 29, just under the threshold.
+    expect(meetsQualityRankingThreshold(20, 5, 4)).toBe(false);
+    // One more worked lead clears it.
+    expect(meetsQualityRankingThreshold(20, 5, 5)).toBe(true);
+    expect(meetsQualityRankingThreshold(0, 0, 0)).toBe(false);
+    expect(MIN_OUTCOMES_FOR_QUALITY_RANKING).toBeGreaterThan(0);
   });
 });

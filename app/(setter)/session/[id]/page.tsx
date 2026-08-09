@@ -17,7 +17,12 @@ export default async function SessionPage({ params }: PageProps<"/session/[id]">
         sessionId={session.id}
         leadListName={session.leadList.name}
         startedAt={session.startedAt.toISOString()}
-        initialCounts={{ dials: session.dials, conversations: session.conversations, appointments: session.appointments }}
+        initialCounts={{
+          conversations: session.conversations,
+          appointments: session.appointments,
+          dq: session.dq,
+          wrongNumber: session.wrongNumber,
+        }}
       />
     );
   }
@@ -30,6 +35,8 @@ export default async function SessionPage({ params }: PageProps<"/session/[id]">
       dials={session.dials}
       conversations={session.conversations}
       appointments={session.appointments}
+      dq={session.dq}
+      wrongNumber={session.wrongNumber}
     />
   );
 }

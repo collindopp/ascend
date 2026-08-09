@@ -26,7 +26,7 @@ export async function rebuildDailyAggregate(params: {
       status: "COMPLETED",
       startedAt: { gte: dayStart, lte: dayEnd },
     },
-    select: { dials: true, conversations: true, appointments: true, startedAt: true, endedAt: true },
+    select: { dials: true, conversations: true, appointments: true, dq: true, wrongNumber: true, startedAt: true, endedAt: true },
   });
 
   const totals = sessions.reduce(
@@ -34,13 +34,15 @@ export async function rebuildDailyAggregate(params: {
       acc.dials += s.dials;
       acc.conversations += s.conversations;
       acc.appointments += s.appointments;
+      acc.dq += s.dq;
+      acc.wrongNumber += s.wrongNumber;
       acc.sessionsCount += 1;
       if (s.endedAt) {
         acc.durationSeconds += Math.max(0, Math.round((s.endedAt.getTime() - s.startedAt.getTime()) / 1000));
       }
       return acc;
     },
-    { dials: 0, conversations: 0, appointments: 0, sessionsCount: 0, durationSeconds: 0 },
+    { dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, sessionsCount: 0, durationSeconds: 0 },
   );
 
   await prisma.dailyAggregate.upsert({

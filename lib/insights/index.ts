@@ -1,7 +1,7 @@
-import { conversionRate, setRateFromConversations, perHour, type RawTotals } from "@/lib/metrics/core";
+import { setRateFromConversations, dqRate, perHour, type RawTotals } from "@/lib/metrics/core";
 import {
   meetsSetRateThreshold,
-  meetsConversionRateThreshold,
+  meetsQualityRankingThreshold,
   MIN_APPOINTMENTS_FOR_RATE_INSIGHT,
 } from "@/lib/metrics/thresholds";
 
@@ -38,35 +38,52 @@ export function topLeadListBySetRate(lists: NamedTotals[]): Insight | null {
 }
 
 /**
- * "<Setter> is converting N% above the team average."
- * Compares each setter's conversion rate to the team average, only for
- * setters with enough dials to be meaningful, and only when the gap is
+ * "<Lead list> currently has the highest disqualification rate across the team."
+ * Surfaces the worst-quality list so managers can investigate the source
+ * before it drags down team-wide numbers — only fires when the underlying
+ * worked-lead volume is large enough to be meaningful.
+ */
+export function worstQualityLeadList(lists: NamedTotals[]): Insight | null {
+  const eligible = lists
+    .filter((l) => meetsQualityRankingThreshold(l.conversations, l.dq, l.wrongNumber))
+    .map((l) => ({ ...l, rate: dqRate(l.dq, l.conversations, l.wrongNumber) }))
+    .filter((l): l is NamedTotals & { rate: number } => l.rate !== null && l.rate > 0)
+    .sort((a, b) => b.rate - a.rate);
+
+  const worst = eligible[0];
+  if (!worst) return null;
+
+  return {
+    id: `worst-quality-lead-list:${worst.id}`,
+    text: `${worst.name} currently has the highest disqualification rate across the team (${worst.rate.toFixed(1)}%).`,
+  };
+}
+
+/**
+ * "<Setter>'s set rate is N% above the team average."
+ * Compares each setter's set rate to the team average, only for setters
+ * with enough conversations to be meaningful, and only when the gap is
  * large enough to be worth surfacing.
  */
 export function settersAboveTeamAverage(setters: NamedTotals[]): Insight[] {
-  const teamTotals = setters.reduce<RawTotals>(
-    (acc, s) => ({
-      dials: acc.dials + s.dials,
-      conversations: acc.conversations + s.conversations,
-      appointments: acc.appointments + s.appointments,
-      durationSeconds: acc.durationSeconds + s.durationSeconds,
-    }),
-    { dials: 0, conversations: 0, appointments: 0, durationSeconds: 0 },
+  const teamTotals = setters.reduce(
+    (acc, s) => ({ conversations: acc.conversations + s.conversations, appointments: acc.appointments + s.appointments }),
+    { conversations: 0, appointments: 0 },
   );
-  const teamRate = conversionRate(teamTotals.conversations, teamTotals.dials);
+  const teamRate = setRateFromConversations(teamTotals.appointments, teamTotals.conversations);
   if (teamRate === null || teamRate === 0) return [];
 
   const insights: Insight[] = [];
   for (const setter of setters) {
-    if (!meetsConversionRateThreshold(setter.dials)) continue;
-    const rate = conversionRate(setter.conversations, setter.dials);
+    if (!meetsSetRateThreshold(setter.conversations)) continue;
+    const rate = setRateFromConversations(setter.appointments, setter.conversations);
     if (rate === null) continue;
 
     const relativeDiff = (rate - teamRate) / teamRate;
     if (relativeDiff >= RELATIVE_DIFF_THRESHOLD) {
       insights.push({
         id: `setter-above-average:${setter.id}`,
-        text: `${setter.name} is converting ${(relativeDiff * 100).toFixed(0)}% above the team average.`,
+        text: `${setter.name}'s set rate is ${(relativeDiff * 100).toFixed(0)}% above the team average.`,
       });
     }
   }
@@ -74,32 +91,27 @@ export function settersAboveTeamAverage(setters: NamedTotals[]): Insight[] {
 }
 
 /**
- * "<Lead list> is producing N% more conversations per 100 dials than the team average."
+ * "<Lead list>'s set rate is N% above the team average."
  */
 export function leadListsAboveTeamAverage(lists: NamedTotals[]): Insight[] {
-  const teamTotals = lists.reduce<RawTotals>(
-    (acc, l) => ({
-      dials: acc.dials + l.dials,
-      conversations: acc.conversations + l.conversations,
-      appointments: acc.appointments + l.appointments,
-      durationSeconds: acc.durationSeconds + l.durationSeconds,
-    }),
-    { dials: 0, conversations: 0, appointments: 0, durationSeconds: 0 },
+  const teamTotals = lists.reduce(
+    (acc, l) => ({ conversations: acc.conversations + l.conversations, appointments: acc.appointments + l.appointments }),
+    { conversations: 0, appointments: 0 },
   );
-  const teamRate = conversionRate(teamTotals.conversations, teamTotals.dials);
+  const teamRate = setRateFromConversations(teamTotals.appointments, teamTotals.conversations);
   if (teamRate === null || teamRate === 0) return [];
 
   const insights: Insight[] = [];
   for (const list of lists) {
-    if (!meetsConversionRateThreshold(list.dials)) continue;
-    const rate = conversionRate(list.conversations, list.dials);
+    if (!meetsSetRateThreshold(list.conversations)) continue;
+    const rate = setRateFromConversations(list.appointments, list.conversations);
     if (rate === null) continue;
 
     const relativeDiff = (rate - teamRate) / teamRate;
     if (relativeDiff >= RELATIVE_DIFF_THRESHOLD) {
       insights.push({
         id: `lead-list-above-average:${list.id}`,
-        text: `${list.name} is producing ${(relativeDiff * 100).toFixed(0)}% more conversations per 100 dials than the team average.`,
+        text: `${list.name}'s set rate is ${(relativeDiff * 100).toFixed(0)}% above the team average.`,
       });
     }
   }
@@ -139,6 +151,9 @@ export function generateInsights(input: {
 
   const topList = topLeadListBySetRate(input.leadLists);
   if (topList) insights.push(topList);
+
+  const worstQuality = worstQualityLeadList(input.leadLists);
+  if (worstQuality) insights.push(worstQuality);
 
   insights.push(...settersAboveTeamAverage(input.setters));
   insights.push(...leadListsAboveTeamAverage(input.leadLists));

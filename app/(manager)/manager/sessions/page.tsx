@@ -59,9 +59,10 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
                 <TableHeadCell>Lead List</TableHeadCell>
                 <TableHeadCell>Started</TableHeadCell>
                 <TableHeadCell>Duration</TableHeadCell>
-                <TableHeadCell>Dials</TableHeadCell>
                 <TableHeadCell>Conversations</TableHeadCell>
                 <TableHeadCell>Appointments</TableHeadCell>
+                <TableHeadCell>DQ</TableHeadCell>
+                <TableHeadCell>Wrong #</TableHeadCell>
                 <TableHeadCell>Status</TableHeadCell>
               </tr>
             </TableHead>
@@ -80,9 +81,10 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
                       {session.startedAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                     </TableCell>
                     <TableCell className="font-mono tabular-nums">{formatDurationCompact(durationSeconds)}</TableCell>
-                    <TableCell className="font-mono tabular-nums">{formatInt(session.dials)}</TableCell>
                     <TableCell className="font-mono tabular-nums">{formatInt(session.conversations)}</TableCell>
                     <TableCell className="font-mono tabular-nums text-accent">{formatInt(session.appointments)}</TableCell>
+                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.dq)}</TableCell>
+                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.wrongNumber)}</TableCell>
                     <TableCell>
                       <Badge tone={session.status === "ACTIVE" ? "positive" : "neutral"}>{session.status}</Badge>
                     </TableCell>

@@ -9,12 +9,21 @@ import { checkRateLimit } from "@/lib/rate-limit/memory";
 
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
 
-type CounterField = "dials" | "conversations" | "appointments";
+type TappableEventType = "CONVERSATION" | "APPOINTMENT" | "DQ" | "WRONG_NUMBER";
+type CounterField = "conversations" | "appointments" | "dq" | "wrongNumber";
+type SessionCounts = { conversations: number; appointments: number; dq: number; wrongNumber: number };
 
-function fieldForEventType(type: "DIAL" | "CONVERSATION" | "APPOINTMENT"): CounterField {
-  if (type === "DIAL") return "dials";
-  if (type === "CONVERSATION") return "conversations";
-  return "appointments";
+function fieldForEventType(type: TappableEventType): CounterField {
+  switch (type) {
+    case "CONVERSATION":
+      return "conversations";
+    case "APPOINTMENT":
+      return "appointments";
+    case "DQ":
+      return "dq";
+    case "WRONG_NUMBER":
+      return "wrongNumber";
+  }
 }
 
 /** Starts a new calling session. Fails cleanly if the setter already has one active (section 8). */
@@ -59,10 +68,8 @@ export async function startSessionAction(input: unknown): Promise<ActionResult<{
   return { ok: true, data: { sessionId: session.id } };
 }
 
-/** Records one dial/conversation/appointment tap. Returns the authoritative updated counts. */
-export async function recordEventAction(
-  input: unknown,
-): Promise<ActionResult<{ dials: number; conversations: number; appointments: number }>> {
+/** Records one conversation/appointment/DQ/wrong-number tap. Returns the authoritative updated counts. */
+export async function recordEventAction(input: unknown): Promise<ActionResult<SessionCounts>> {
   const user = await requireActionRole(["SETTER"]);
   const parsed = recordEventSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request." };
@@ -86,14 +93,19 @@ export async function recordEventAction(
 
   return {
     ok: true,
-    data: { dials: updated.dials, conversations: updated.conversations, appointments: updated.appointments },
+    data: {
+      conversations: updated.conversations,
+      appointments: updated.appointments,
+      dq: updated.dq,
+      wrongNumber: updated.wrongNumber,
+    },
   };
 }
 
 /** Undoes the most recent tap for this session, based on the server's own event log — never trusts the client's idea of what to undo. */
 export async function undoLastEventAction(
   input: unknown,
-): Promise<ActionResult<{ dials: number; conversations: number; appointments: number; undone: string | null }>> {
+): Promise<ActionResult<SessionCounts & { undone: string | null }>> {
   const user = await requireActionRole(["SETTER"]);
   const parsed = sessionIdSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request." };
@@ -104,12 +116,12 @@ export async function undoLastEventAction(
   if (!session) return { ok: false, error: "Session not found or already ended." };
 
   const lastEvent = await prisma.sessionEvent.findFirst({
-    where: { sessionId: session.id, type: { in: ["DIAL", "CONVERSATION", "APPOINTMENT"] } },
+    where: { sessionId: session.id, type: { in: ["CONVERSATION", "APPOINTMENT", "DQ", "WRONG_NUMBER"] } },
     orderBy: { createdAt: "desc" },
   });
   if (!lastEvent) return { ok: false, error: "Nothing to undo." };
 
-  const field = fieldForEventType(lastEvent.type as "DIAL" | "CONVERSATION" | "APPOINTMENT");
+  const field = fieldForEventType(lastEvent.type as TappableEventType);
 
   try {
     const [updated] = await prisma.$transaction([
@@ -124,9 +136,10 @@ export async function undoLastEventAction(
     return {
       ok: true,
       data: {
-        dials: updated.dials,
         conversations: updated.conversations,
         appointments: updated.appointments,
+        dq: updated.dq,
+        wrongNumber: updated.wrongNumber,
         undone: lastEvent.type,
       },
     };

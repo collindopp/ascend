@@ -30,6 +30,8 @@ enum SessionEventType {
   DIAL
   CONVERSATION
   APPOINTMENT
+  DQ
+  WRONG_NUMBER
   UNDO
 }
 
@@ -124,6 +126,8 @@ model CallingSession {
   dials        Int           @default(0)
   conversations Int          @default(0)
   appointments Int           @default(0)
+  dq           Int           @default(0)
+  wrongNumber  Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -159,6 +163,8 @@ model DailyAggregate {
   dials            Int      @default(0)
   conversations    Int      @default(0)
   appointments     Int      @default(0)
+  dq               Int      @default(0)
+  wrongNumber      Int      @default(0)
   sessionsCount    Int      @default(0)
   durationSeconds  Int      @default(0)
   updatedAt        DateTime @updatedAt

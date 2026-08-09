@@ -48,12 +48,12 @@ export function LeadListSelector({ leadLists }: { leadLists: LeadListWithStats[]
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">Conv. Rate</p>
-                <p className="mt-0.5 font-mono text-sm text-text-secondary">{formatPercent(list.conversionRate)}</p>
-              </div>
-              <div>
                 <p className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">Set Rate</p>
                 <p className="mt-0.5 font-mono text-sm text-text-secondary">{formatPercent(list.setRate)}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-text-tertiary">DQ Rate</p>
+                <p className="mt-0.5 font-mono text-sm text-text-secondary">{formatPercent(list.dqRate)}</p>
               </div>
             </div>
           </div>

@@ -11,11 +11,22 @@ interface SessionSummaryProps {
   dials: number;
   conversations: number;
   appointments: number;
+  dq: number;
+  wrongNumber: number;
 }
 
-export function SessionSummary({ leadListName, startedAt, endedAt, dials, conversations, appointments }: SessionSummaryProps) {
+export function SessionSummary({
+  leadListName,
+  startedAt,
+  endedAt,
+  dials,
+  conversations,
+  appointments,
+  dq,
+  wrongNumber,
+}: SessionSummaryProps) {
   const durationSeconds = Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 1000));
-  const metrics = deriveMetrics({ dials, conversations, appointments, durationSeconds });
+  const metrics = deriveMetrics({ dials, conversations, appointments, dq, wrongNumber, durationSeconds });
 
   return (
     <div className="flex flex-col gap-8">
@@ -26,16 +37,20 @@ export function SessionSummary({ leadListName, startedAt, endedAt, dials, conver
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <MetricDisplay label="Dials" value={formatInt(dials)} size="lg" />
+      <div className="grid grid-cols-2 gap-4">
         <MetricDisplay label="Conversations" value={formatInt(conversations)} size="lg" />
         <MetricDisplay label="Appointments" value={formatInt(appointments)} size="lg" tone="positive" />
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <MetricDisplay label="DQ" value={formatInt(dq)} size="md" tone="muted" />
+        <MetricDisplay label="Wrong Name/Number" value={formatInt(wrongNumber)} size="md" tone="muted" />
+      </div>
+
       <div className="grid grid-cols-2 gap-4 border-t border-border-subtle pt-6 sm:grid-cols-4">
-        <MetricDisplay label="Conv. Rate" value={formatPercent(metrics.conversionRate)} size="sm" />
-        <MetricDisplay label="Set Rate / Conv" value={formatPercent(metrics.setRateFromConversations)} size="sm" />
-        <MetricDisplay label="Set Rate / Dial" value={formatPercent(metrics.setRateFromDials)} size="sm" />
+        <MetricDisplay label="Set Rate" value={formatPercent(metrics.setRateFromConversations)} size="sm" />
+        <MetricDisplay label="DQ Rate" value={formatPercent(metrics.dqRate)} size="sm" />
+        <MetricDisplay label="Wrong # Rate" value={formatPercent(metrics.wrongNumberRate)} size="sm" />
         <MetricDisplay label="Appts / Hour" value={formatRate(metrics.appointmentsPerHour)} size="sm" />
       </div>
 

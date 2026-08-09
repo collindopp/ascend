@@ -1,43 +1,59 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
-import { conversionRate, setRateFromConversations, perHour } from "@/lib/metrics/core";
-import { meetsSetRateThreshold, meetsConversionRateThreshold, meetsHourlyRankingThreshold } from "@/lib/metrics/thresholds";
+import { setRateFromConversations, perHour, dqRate, wrongNumberRate } from "@/lib/metrics/core";
+import { meetsSetRateThreshold, meetsHourlyRankingThreshold, meetsQualityRankingThreshold } from "@/lib/metrics/thresholds";
 import { fetchSessionsInRange, groupByCell } from "@/lib/analytics/queries";
 import type { DateRange } from "@/lib/utils/date-range";
 
 export const MATRIX_KPIS = [
   "setRate",
-  "conversionRate",
   "appointments",
   "appointmentsPerHour",
-  "dialsPerHour",
   "conversationsPerHour",
+  "dqRate",
+  "wrongNumberRate",
 ] as const;
 export type MatrixKpi = (typeof MATRIX_KPIS)[number];
 
 export const MATRIX_KPI_LABELS: Record<MatrixKpi, string> = {
   setRate: "Set Rate",
-  conversionRate: "Conversation Rate",
   appointments: "Appointments",
   appointmentsPerHour: "Appointments / Hour",
-  dialsPerHour: "Dials / Hour",
   conversationsPerHour: "Conversations / Hour",
+  dqRate: "DQ Rate",
+  wrongNumberRate: "Wrong # Rate",
 };
 
-function cellValue(kpi: MatrixKpi, cell: { dials: number; conversations: number; appointments: number; durationSeconds: number }) {
+// KPIs where a higher value is worse (data-quality problems), not better —
+// these get colored on the danger scale instead of the accent scale.
+export const MATRIX_INVERSE_KPIS: ReadonlySet<MatrixKpi> = new Set(["dqRate", "wrongNumberRate"]);
+
+interface Cell {
+  conversations: number;
+  appointments: number;
+  dq: number;
+  wrongNumber: number;
+  durationSeconds: number;
+}
+
+function cellValue(kpi: MatrixKpi, cell: Cell) {
   switch (kpi) {
     case "setRate":
       return meetsSetRateThreshold(cell.conversations) ? setRateFromConversations(cell.appointments, cell.conversations) : null;
-    case "conversionRate":
-      return meetsConversionRateThreshold(cell.dials) ? conversionRate(cell.conversations, cell.dials) : null;
     case "appointments":
       return cell.appointments;
     case "appointmentsPerHour":
-      return meetsHourlyRankingThreshold(cell.dials) ? perHour(cell.appointments, cell.durationSeconds) : null;
-    case "dialsPerHour":
-      return meetsHourlyRankingThreshold(cell.dials) ? perHour(cell.dials, cell.durationSeconds) : null;
+      return meetsHourlyRankingThreshold(cell.durationSeconds) ? perHour(cell.appointments, cell.durationSeconds) : null;
     case "conversationsPerHour":
-      return meetsHourlyRankingThreshold(cell.dials) ? perHour(cell.conversations, cell.durationSeconds) : null;
+      return meetsHourlyRankingThreshold(cell.durationSeconds) ? perHour(cell.conversations, cell.durationSeconds) : null;
+    case "dqRate":
+      return meetsQualityRankingThreshold(cell.conversations, cell.dq, cell.wrongNumber)
+        ? dqRate(cell.dq, cell.conversations, cell.wrongNumber)
+        : null;
+    case "wrongNumberRate":
+      return meetsQualityRankingThreshold(cell.conversations, cell.dq, cell.wrongNumber)
+        ? wrongNumberRate(cell.wrongNumber, cell.conversations, cell.dq)
+        : null;
   }
 }
 
