@@ -14,8 +14,12 @@ const NAV_ITEMS = [
 export default async function ManagerLayout({ children }: { children: React.ReactNode }) {
   const user = await requirePageRole(["MANAGER", "ADMIN"]);
 
+  // Only admins also have setter access (see the (setter) layout) — a plain
+  // manager clicking this would just get bounced, so keep it admin-only.
+  const items = user.role === "ADMIN" ? [{ label: "Tally", href: "/home" }, ...NAV_ITEMS] : NAV_ITEMS;
+
   return (
-    <NavShell items={NAV_ITEMS} roleLabel={roleLabel(user.role)} userName={user.name ?? user.email ?? ""}>
+    <NavShell items={items} roleLabel={roleLabel(user.role)} userName={user.name ?? user.email ?? ""}>
       {children}
     </NavShell>
   );

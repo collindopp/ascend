@@ -3,6 +3,7 @@ import { NavShell } from "@/components/ui/NavShell";
 import { roleLabel } from "@/lib/auth/roles";
 
 const NAV_ITEMS = [
+  { label: "Tally", href: "/home" },
   { label: "Users", href: "/admin/users" },
   { label: "Teams", href: "/admin/teams" },
   { label: "Lead Lists", href: "/admin/lead-lists" },
