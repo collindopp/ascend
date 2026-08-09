@@ -122,6 +122,51 @@ body {
   animation: toast-in var(--duration-base) var(--ease-out-expo);
 }
 
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--accent-border);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+.animate-live-pulse {
+  animation: live-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes row-flash {
+  0% {
+    background-color: var(--accent-muted);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.animate-row-flash {
+  animation: row-flash 1.2s var(--ease-out-expo);
+}
+
+@keyframes rank-badge-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-rank-pop {
+  animation: rank-badge-pop var(--duration-slow) var(--ease-out-expo);
+}
+
 ::selection {
   background: var(--accent-muted);
   color: var(--text-primary);

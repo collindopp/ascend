@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { label: "Home", href: "/home" },
   { label: "History", href: "/history" },
   { label: "Performance", href: "/performance" },
+  { label: "Leaderboard", href: "/leaderboard" },
 ];
 
 export default async function SetterLayout({ children }: { children: React.ReactNode }) {
