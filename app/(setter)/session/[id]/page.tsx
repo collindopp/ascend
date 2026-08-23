@@ -22,6 +22,9 @@ export default async function SessionPage({ params }: PageProps<"/session/[id]">
           appointments: session.appointments,
           dq: session.dq,
           wrongNumber: session.wrongNumber,
+          pickUps: session.pickUps,
+          notInterested: session.notInterested,
+          followUp: session.followUp,
         }}
       />
     );
@@ -37,6 +40,9 @@ export default async function SessionPage({ params }: PageProps<"/session/[id]">
       appointments={session.appointments}
       dq={session.dq}
       wrongNumber={session.wrongNumber}
+      pickUps={session.pickUps}
+      notInterested={session.notInterested}
+      followUp={session.followUp}
     />
   );
 }

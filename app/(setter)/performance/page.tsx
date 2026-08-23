@@ -60,6 +60,16 @@ export default async function PerformancePage() {
         <MetricDisplay label="Wrong #" value={<AnimatedNumber value={perf.allTime.wrongNumber} initialValue={0} />} tone="muted" />
       </div>
 
+      <div className="grid grid-cols-3 gap-4 animate-fade-in-up" style={{ animationDelay: "150ms" }}>
+        <MetricDisplay label="Pick Ups" value={<AnimatedNumber value={perf.extras.pickUps} initialValue={0} />} tone="muted" />
+        <MetricDisplay
+          label="Not Interested"
+          value={<AnimatedNumber value={perf.extras.notInterested} initialValue={0} />}
+          tone="muted"
+        />
+        <MetricDisplay label="Follow Up" value={<AnimatedNumber value={perf.extras.followUp} initialValue={0} />} tone="muted" />
+      </div>
+
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 animate-fade-in-up" style={{ animationDelay: "180ms" }}>
         <MetricDisplay label="DQ Rate" value={<AnimatedRate metricValue={perf.metrics.dqRate} formatType="percent" />} size="sm" />
         <MetricDisplay

@@ -15,6 +15,9 @@ interface SessionSummaryProps {
   appointments: number;
   dq: number;
   wrongNumber: number;
+  pickUps: number;
+  notInterested: number;
+  followUp: number;
 }
 
 export function SessionSummary({
@@ -26,6 +29,9 @@ export function SessionSummary({
   appointments,
   dq,
   wrongNumber,
+  pickUps,
+  notInterested,
+  followUp,
 }: SessionSummaryProps) {
   const durationSeconds = Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 1000));
   const metrics = deriveMetrics({ dials, conversations, appointments, dq, wrongNumber, durationSeconds });
@@ -63,6 +69,27 @@ export function SessionSummary({
         <MetricDisplay
           label="Wrong Name/Number"
           value={<AnimatedNumber value={wrongNumber} initialValue={0} durationMs={900} />}
+          size="md"
+          tone="muted"
+        />
+      </div>
+
+      <div className="grid grid-cols-3 gap-4 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
+        <MetricDisplay
+          label="Pick Ups"
+          value={<AnimatedNumber value={pickUps} initialValue={0} durationMs={900} />}
+          size="md"
+          tone="muted"
+        />
+        <MetricDisplay
+          label="Not Interested"
+          value={<AnimatedNumber value={notInterested} initialValue={0} durationMs={900} />}
+          size="md"
+          tone="muted"
+        />
+        <MetricDisplay
+          label="Follow Up"
+          value={<AnimatedNumber value={followUp} initialValue={0} durationMs={900} />}
           size="md"
           tone="muted"
         />

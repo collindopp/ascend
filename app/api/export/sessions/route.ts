@@ -34,6 +34,9 @@ export async function GET(request: Request) {
     { key: "appointments", label: "Appointments", value: (s) => s.appointments },
     { key: "dq", label: "DQ", value: (s) => s.dq },
     { key: "wrongNumber", label: "Wrong #", value: (s) => s.wrongNumber },
+    { key: "pickUps", label: "Pick Ups", value: (s) => s.pickUps },
+    { key: "notInterested", label: "Not Interested", value: (s) => s.notInterested },
+    { key: "followUp", label: "Follow Up", value: (s) => s.followUp },
     {
       key: "setRate",
       label: "Set Rate (%)",

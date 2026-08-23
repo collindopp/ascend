@@ -9,9 +9,27 @@ import { checkRateLimit } from "@/lib/rate-limit/memory";
 
 export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: string };
 
-type TappableEventType = "CONVERSATION" | "APPOINTMENT" | "DQ" | "WRONG_NUMBER";
-type CounterField = "conversations" | "appointments" | "dq" | "wrongNumber";
-type SessionCounts = { conversations: number; appointments: number; dq: number; wrongNumber: number };
+type TappableEventType = "CONVERSATION" | "APPOINTMENT" | "DQ" | "WRONG_NUMBER" | "PICK_UP" | "NOT_INTERESTED" | "FOLLOW_UP";
+type CounterField = "conversations" | "appointments" | "dq" | "wrongNumber" | "pickUps" | "notInterested" | "followUp";
+type SessionCounts = {
+  conversations: number;
+  appointments: number;
+  dq: number;
+  wrongNumber: number;
+  pickUps: number;
+  notInterested: number;
+  followUp: number;
+};
+
+const UNDOABLE_TYPES: TappableEventType[] = [
+  "CONVERSATION",
+  "APPOINTMENT",
+  "DQ",
+  "WRONG_NUMBER",
+  "PICK_UP",
+  "NOT_INTERESTED",
+  "FOLLOW_UP",
+];
 
 function fieldForEventType(type: TappableEventType): CounterField {
   switch (type) {
@@ -23,6 +41,12 @@ function fieldForEventType(type: TappableEventType): CounterField {
       return "dq";
     case "WRONG_NUMBER":
       return "wrongNumber";
+    case "PICK_UP":
+      return "pickUps";
+    case "NOT_INTERESTED":
+      return "notInterested";
+    case "FOLLOW_UP":
+      return "followUp";
   }
 }
 
@@ -98,6 +122,9 @@ export async function recordEventAction(input: unknown): Promise<ActionResult<Se
       appointments: updated.appointments,
       dq: updated.dq,
       wrongNumber: updated.wrongNumber,
+      pickUps: updated.pickUps,
+      notInterested: updated.notInterested,
+      followUp: updated.followUp,
     },
   };
 }
@@ -116,7 +143,7 @@ export async function undoLastEventAction(
   if (!session) return { ok: false, error: "Session not found or already ended." };
 
   const lastEvent = await prisma.sessionEvent.findFirst({
-    where: { sessionId: session.id, type: { in: ["CONVERSATION", "APPOINTMENT", "DQ", "WRONG_NUMBER"] } },
+    where: { sessionId: session.id, type: { in: UNDOABLE_TYPES } },
     orderBy: { createdAt: "desc" },
   });
   if (!lastEvent) return { ok: false, error: "Nothing to undo." };
@@ -140,6 +167,9 @@ export async function undoLastEventAction(
         appointments: updated.appointments,
         dq: updated.dq,
         wrongNumber: updated.wrongNumber,
+        pickUps: updated.pickUps,
+        notInterested: updated.notInterested,
+        followUp: updated.followUp,
         undone: lastEvent.type,
       },
     };

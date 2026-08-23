@@ -7,6 +7,7 @@ import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 export interface PersonalPerformance {
   allTime: RawTotals & { sessionsCount: number };
   metrics: ReturnType<typeof deriveMetrics>;
+  extras: { pickUps: number; notInterested: number; followUp: number };
   teamAverageSetRate: number | null;
   bestSession: {
     id: string;
@@ -34,6 +35,17 @@ export async function getPersonalPerformance(setterId: string): Promise<Personal
   );
   const sessionsCount = aggregates.reduce((sum, a) => sum + a.sessionsCount, 0);
   const metrics = deriveMetrics(allTimeTotals);
+
+  // Kept separate from RawTotals/deriveMetrics — these are plain tracked
+  // counts, not part of any existing rate calculation.
+  const extras = aggregates.reduce(
+    (acc, a) => ({
+      pickUps: acc.pickUps + a.pickUps,
+      notInterested: acc.notInterested + a.notInterested,
+      followUp: acc.followUp + a.followUp,
+    }),
+    { pickUps: 0, notInterested: 0, followUp: 0 },
+  );
 
   // Team average set rate across all setters, all-time — for the "vs team" comparison.
   const teamAgg = await prisma.dailyAggregate.aggregate({
@@ -86,6 +98,7 @@ export async function getPersonalPerformance(setterId: string): Promise<Personal
   return {
     allTime: { ...allTimeTotals, sessionsCount },
     metrics,
+    extras,
     teamAverageSetRate,
     bestSession,
     dailyTrend,

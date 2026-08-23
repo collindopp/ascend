@@ -73,6 +73,9 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
                 <TableHeadCell>Appointments</TableHeadCell>
                 <TableHeadCell>DQ</TableHeadCell>
                 <TableHeadCell>Wrong #</TableHeadCell>
+                <TableHeadCell>Pick Ups</TableHeadCell>
+                <TableHeadCell>Not Interested</TableHeadCell>
+                <TableHeadCell>Follow Up</TableHeadCell>
                 <TableHeadCell>Status</TableHeadCell>
               </tr>
             </TableHead>
@@ -95,6 +98,9 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
                     <TableCell className="font-mono tabular-nums text-accent">{formatInt(session.appointments)}</TableCell>
                     <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.dq)}</TableCell>
                     <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.wrongNumber)}</TableCell>
+                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.pickUps)}</TableCell>
+                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.notInterested)}</TableCell>
+                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.followUp)}</TableCell>
                     <TableCell>
                       <Badge tone={session.status === "ACTIVE" ? "positive" : "neutral"}>{session.status}</Badge>
                     </TableCell>

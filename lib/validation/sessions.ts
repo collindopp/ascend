@@ -11,5 +11,5 @@ export const sessionIdSchema = z.object({
 // DIAL is intentionally excluded — dials come from the external dialer, never a manual tap.
 export const recordEventSchema = z.object({
   sessionId: z.string().min(1),
-  type: z.enum(["CONVERSATION", "APPOINTMENT", "DQ", "WRONG_NUMBER"]),
+  type: z.enum(["CONVERSATION", "APPOINTMENT", "DQ", "WRONG_NUMBER", "PICK_UP", "NOT_INTERESTED", "FOLLOW_UP"]),
 });

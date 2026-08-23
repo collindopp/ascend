@@ -13,6 +13,9 @@ interface SessionCounts {
   appointments: number;
   dq: number;
   wrongNumber: number;
+  pickUps: number;
+  notInterested: number;
+  followUp: number;
 }
 
 interface ActiveSessionViewProps {
@@ -22,13 +25,16 @@ interface ActiveSessionViewProps {
   initialCounts: SessionCounts;
 }
 
-type EventType = "CONVERSATION" | "APPOINTMENT" | "DQ" | "WRONG_NUMBER";
+type EventType = "CONVERSATION" | "APPOINTMENT" | "DQ" | "WRONG_NUMBER" | "PICK_UP" | "NOT_INTERESTED" | "FOLLOW_UP";
 
 const FIELD_FOR_TYPE: Record<EventType, keyof SessionCounts> = {
   CONVERSATION: "conversations",
   APPOINTMENT: "appointments",
   DQ: "dq",
   WRONG_NUMBER: "wrongNumber",
+  PICK_UP: "pickUps",
+  NOT_INTERESTED: "notInterested",
+  FOLLOW_UP: "followUp",
 };
 
 type PopKeys = Record<keyof SessionCounts, number>;
@@ -42,7 +48,15 @@ export function ActiveSessionView({ sessionId, leadListName, startedAt, initialC
   const [isUndoing, setIsUndoing] = useState(false);
   // Bumped on every tap for a field so its number can remount and replay the
   // pop animation, even on rapid consecutive taps of the same button.
-  const [popKeys, setPopKeys] = useState<PopKeys>({ conversations: 0, appointments: 0, dq: 0, wrongNumber: 0 });
+  const [popKeys, setPopKeys] = useState<PopKeys>({
+    conversations: 0,
+    appointments: 0,
+    dq: 0,
+    wrongNumber: 0,
+    pickUps: 0,
+    notInterested: 0,
+    followUp: 0,
+  });
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -141,6 +155,13 @@ export function ActiveSessionView({ sessionId, leadListName, startedAt, initialC
         />
       </div>
 
+      <Button size="lg" variant="secondary" onClick={() => handleTap("PICK_UP")} className="w-full flex-col gap-1">
+        <span>Pick Up</span>
+        <span key={popKeys.pickUps} className="inline-block animate-counter-pop font-mono text-xs text-text-tertiary tabular-nums">
+          {formatInt(counts.pickUps)}
+        </span>
+      </Button>
+
       <div className="grid grid-cols-2 gap-3">
         <Button size="xl" variant="secondary" onClick={() => handleTap("CONVERSATION")} className="flex-col gap-1">
           <span>Conversation</span>
@@ -164,6 +185,27 @@ export function ActiveSessionView({ sessionId, leadListName, startedAt, initialC
             className="inline-block animate-counter-pop font-mono text-xs text-text-tertiary tabular-nums"
           >
             {formatInt(counts.wrongNumber)}
+          </span>
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Button size="lg" variant="secondary" onClick={() => handleTap("NOT_INTERESTED")} className="flex-col gap-1">
+          <span>Not Interested</span>
+          <span
+            key={popKeys.notInterested}
+            className="inline-block animate-counter-pop font-mono text-xs text-text-tertiary tabular-nums"
+          >
+            {formatInt(counts.notInterested)}
+          </span>
+        </Button>
+        <Button size="lg" variant="secondary" onClick={() => handleTap("FOLLOW_UP")} className="flex-col gap-1">
+          <span>Follow Up</span>
+          <span
+            key={popKeys.followUp}
+            className="inline-block animate-counter-pop font-mono text-xs text-text-tertiary tabular-nums"
+          >
+            {formatInt(counts.followUp)}
           </span>
         </Button>
       </div>

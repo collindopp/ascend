@@ -32,6 +32,9 @@ enum SessionEventType {
   APPOINTMENT
   DQ
   WRONG_NUMBER
+  PICK_UP
+  NOT_INTERESTED
+  FOLLOW_UP
   UNDO
 }
 
@@ -128,6 +131,9 @@ model CallingSession {
   appointments Int           @default(0)
   dq           Int           @default(0)
   wrongNumber  Int           @default(0)
+  pickUps      Int           @default(0)
+  notInterested Int          @default(0)
+  followUp     Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -165,6 +171,9 @@ model DailyAggregate {
   appointments     Int      @default(0)
   dq               Int      @default(0)
   wrongNumber      Int      @default(0)
+  pickUps          Int      @default(0)
+  notInterested    Int      @default(0)
+  followUp         Int      @default(0)
   sessionsCount    Int      @default(0)
   durationSeconds  Int      @default(0)
   updatedAt        DateTime @updatedAt
