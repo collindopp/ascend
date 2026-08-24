@@ -92,6 +92,7 @@ model User {
   auditLogs         AuditLog[]
   dailyAggregates   DailyAggregate[]
   textAppointments  TextAppointment[]
+  weeklyGoals       WeeklyGoal[]
 
   @@index([teamId])
   @@index([role])
@@ -177,6 +178,21 @@ model TextAppointment {
   @@index([leadListId])
   @@index([createdAt])
   @@map("text_appointments")
+}
+
+model WeeklyGoal {
+  id        String   @id @default(cuid())
+  setterId  String
+  weekStart DateTime @db.Date
+  target    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  setter User @relation(fields: [setterId], references: [id])
+
+  @@unique([setterId, weekStart])
+  @@index([weekStart])
+  @@map("weekly_goals")
 }
 
 model DailyAggregate {

@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { label: "Lead Intelligence", href: "/manager/lead-intelligence" },
   { label: "Matrix", href: "/manager/matrix" },
   { label: "Leaderboard", href: "/manager/leaderboard" },
+  { label: "Goals", href: "/manager/goals" },
   { label: "Sessions", href: "/manager/sessions" },
 ];
 
