@@ -1,6 +1,7 @@
 import { requirePageRole } from "@/lib/auth/dal";
 import { NavShell } from "@/components/ui/NavShell";
 import { roleLabel } from "@/lib/auth/roles";
+import { closeStaleActiveSessions } from "@/lib/sessions/auto-timeout";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/home" },
@@ -12,6 +13,11 @@ const NAV_ITEMS = [
 export default async function SetterLayout({ children }: { children: React.ReactNode }) {
   // Admins can also use the calling/tally flow themselves, not just view analytics.
   const user = await requirePageRole(["SETTER", "ADMIN"]);
+
+  // Opportunistic sweep — piggybacks on ordinary traffic instead of a cron
+  // job, so a setter never gets silently redirected back into a session
+  // that's actually been abandoned for hours.
+  await closeStaleActiveSessions();
 
   return (
     <NavShell
