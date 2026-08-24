@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { getActiveNow, getRepActivitySummary, getActivityFeed, EVENT_TYPE_LABELS } from "@/lib/analytics/activity";
 import { getFilterOptions } from "@/lib/analytics/sessions-explorer";
+import { getDailyTimeWorked, EXPECTED_HOURS_PER_DAY } from "@/lib/analytics/time-worked";
 import { parseRangeParam, DATE_RANGE_LABELS } from "@/lib/utils/date-range";
 import { DateRangeFilter } from "@/components/manager/DateRangeFilter";
 import { ActivityFilters } from "@/components/manager/ActivityFilters";
 import { ActiveNowPanel } from "@/components/manager/ActiveNowPanel";
+import { DailyTimeWorkedGrid } from "@/components/manager/DailyTimeWorkedGrid";
 import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -27,11 +29,12 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
   if (setterId) exportParams.set("setter", setterId);
   const exportHref = `/api/export/activity?${exportParams.toString()}`;
 
-  const [activeNow, summary, feed, { setters }] = await Promise.all([
+  const [activeNow, summary, feed, { setters }, dailyTimeWorked] = await Promise.all([
     getActiveNow(),
     getRepActivitySummary(range),
     getActivityFeed({ range, setterId, page, pageSize: PAGE_SIZE }),
     getFilterOptions(),
+    getDailyTimeWorked(),
   ]);
 
   const buildPageHref = (targetPage: number) => {
@@ -52,6 +55,17 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
       </div>
 
       <ActiveNowPanel initialRows={activeNow} />
+
+      <div className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-sm font-semibold text-text-primary">Daily Time Worked — Last 14 Days</h2>
+          <p className="mt-1 text-xs text-text-tertiary">
+            Active session time per day. Tint scales toward {EXPECTED_HOURS_PER_DAY}h; a red — is a day with zero logged
+            activity.
+          </p>
+        </div>
+        <DailyTimeWorkedGrid rows={dailyTimeWorked} />
+      </div>
 
       <div className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-text-primary">Summary — {DATE_RANGE_LABELS[preset]}</h2>
