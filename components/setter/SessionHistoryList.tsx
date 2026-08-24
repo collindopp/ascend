@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { setRateFromConversations } from "@/lib/metrics/core";
+import { LocalDateTime } from "@/components/ui/LocalDateTime";
 import { formatInt, formatPercent, formatDurationCompact } from "@/lib/format/number";
 
 interface HistorySessionRow {
@@ -32,7 +33,7 @@ export function SessionHistoryList({ sessions }: { sessions: HistorySessionRow[]
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-text-primary">{session.leadListName}</p>
               <p className="mt-0.5 text-xs text-text-tertiary">
-                {session.startedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })} ·{" "}
+                <LocalDateTime iso={session.startedAt.toISOString()} options={{ month: "short", day: "numeric" }} /> ·{" "}
                 {formatDurationCompact(durationSeconds)}
               </p>
             </div>

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { LocalDateTime } from "@/components/ui/LocalDateTime";
 import { formatInt, formatDurationCompact, formatRate } from "@/lib/format/number";
 
 const PAGE_SIZE = 30;
@@ -84,14 +85,14 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
                   <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(row.undos)}</TableCell>
                   <TableCell className="font-mono tabular-nums text-text-secondary">{formatRate(row.tapsPerHour)}</TableCell>
                   <TableCell className="text-text-tertiary">
-                    {row.lastActiveAt
-                      ? row.lastActiveAt.toLocaleString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })
-                      : "—"}
+                    {row.lastActiveAt ? (
+                      <LocalDateTime
+                        iso={row.lastActiveAt.toISOString()}
+                        options={{ month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }}
+                      />
+                    ) : (
+                      "—"
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -129,13 +130,10 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
                 {feed.rows.map((event) => (
                   <TableRow key={event.id}>
                     <TableCell className="text-text-tertiary">
-                      {event.createdAt.toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      })}
+                      <LocalDateTime
+                        iso={event.createdAt.toISOString()}
+                        options={{ month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit" }}
+                      />
                     </TableCell>
                     <TableCell className="font-medium text-text-primary">{event.setterName}</TableCell>
                     <TableCell>

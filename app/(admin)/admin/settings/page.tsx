@@ -3,6 +3,7 @@ import { AddSettingForm } from "@/components/admin/AddSettingForm";
 import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { LocalDateTime } from "@/components/ui/LocalDateTime";
 
 export default async function SettingsPage() {
   const settings = await getSystemSettings();
@@ -39,7 +40,9 @@ export default async function SettingsPage() {
               <TableRow key={setting.id}>
                 <TableCell className="font-mono text-text-primary">{setting.key}</TableCell>
                 <TableCell className="text-text-secondary">{String(setting.value)}</TableCell>
-                <TableCell className="text-text-tertiary">{setting.updatedAt.toLocaleString()}</TableCell>
+                <TableCell className="text-text-tertiary">
+                  <LocalDateTime iso={setting.updatedAt.toISOString()} />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

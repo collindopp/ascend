@@ -1,6 +1,7 @@
 import { getIntegrationStatuses } from "@/lib/admin/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { LocalDateTime } from "@/components/ui/LocalDateTime";
 
 const PROVIDER_META: Record<string, { label: string; description: string }> = {
   QUICKBASE: {
@@ -48,7 +49,7 @@ export default async function IntegrationsPage() {
               <CardContent>
                 <p className="text-sm text-text-tertiary">{meta.description}</p>
                 <p className="mt-4 text-xs text-text-tertiary">
-                  {lastSyncAt ? `Last sync: ${lastSyncAt.toLocaleString()}` : "Ready for connection."}
+                  {lastSyncAt ? <>Last sync: <LocalDateTime iso={lastSyncAt.toISOString()} /></> : "Ready for connection."}
                 </p>
               </CardContent>
             </Card>

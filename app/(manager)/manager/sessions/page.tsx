@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { LocalDateTime } from "@/components/ui/LocalDateTime";
 import { formatInt, formatDurationCompact } from "@/lib/format/number";
 
 const PAGE_SIZE = 25;
@@ -90,8 +91,10 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
                     <TableCell className="font-medium text-text-primary">{session.setter.name}</TableCell>
                     <TableCell>{session.leadList.name}</TableCell>
                     <TableCell className="text-text-tertiary">
-                      {session.startedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}{" "}
-                      {session.startedAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                      <LocalDateTime
+                        iso={session.startedAt.toISOString()}
+                        options={{ month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }}
+                      />
                     </TableCell>
                     <TableCell className="font-mono tabular-nums">{formatDurationCompact(durationSeconds)}</TableCell>
                     <TableCell className="font-mono tabular-nums">{formatInt(session.conversations)}</TableCell>

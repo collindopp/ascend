@@ -3,6 +3,7 @@ import { getAuditLogPage } from "@/lib/admin/queries";
 import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LocalDateTime } from "@/components/ui/LocalDateTime";
 
 const PAGE_SIZE = 30;
 
@@ -34,7 +35,9 @@ export default async function AuditLogPage({ searchParams }: PageProps<"/admin/a
             <TableBody>
               {rows.map((event) => (
                 <TableRow key={event.id}>
-                  <TableCell className="text-text-tertiary">{event.createdAt.toLocaleString()}</TableCell>
+                  <TableCell className="text-text-tertiary">
+                    <LocalDateTime iso={event.createdAt.toISOString()} />
+                  </TableCell>
                   <TableCell className="text-text-secondary">{event.actor?.name ?? "System"}</TableCell>
                   <TableCell className="font-mono text-xs text-text-primary">{event.action}</TableCell>
                   <TableCell className="text-text-secondary">

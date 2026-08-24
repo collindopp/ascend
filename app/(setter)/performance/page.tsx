@@ -5,6 +5,7 @@ import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { AnimatedRate } from "@/components/ui/AnimatedRate";
 import { TrendChart } from "@/components/ui/TrendChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { LocalDateTime } from "@/components/ui/LocalDateTime";
 import { formatInt, formatPercent, formatDurationCompact } from "@/lib/format/number";
 
 export default async function PerformancePage() {
@@ -112,7 +113,10 @@ export default async function PerformancePage() {
             <div>
               <p className="text-sm text-text-primary">{perf.bestSession.leadListName}</p>
               <p className="mt-0.5 text-xs text-text-tertiary">
-                {perf.bestSession.startedAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                <LocalDateTime
+                  iso={perf.bestSession.startedAt.toISOString()}
+                  options={{ month: "short", day: "numeric", year: "numeric" }}
+                />
               </p>
             </div>
             <div className="flex gap-6">
