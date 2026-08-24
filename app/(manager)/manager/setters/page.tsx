@@ -40,6 +40,7 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
               <TableHeadCell>Setter</TableHeadCell>
               <TableHeadCell>Conversations</TableHeadCell>
               <TableHeadCell>Appointments</TableHeadCell>
+              <TableHeadCell>Text Appts</TableHeadCell>
               <TableHeadCell>Set Rate</TableHeadCell>
               <TableHeadCell>DQ Rate</TableHeadCell>
               <TableHeadCell>Wrong # Rate</TableHeadCell>
@@ -56,6 +57,7 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
                 </TableCell>
                 <TableCell className="font-mono tabular-nums">{formatInt(row.conversations)}</TableCell>
                 <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.appointments)}</TableCell>
+                <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.textAppointments)}</TableCell>
                 <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.setRateFromConversations)}</TableCell>
                 <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.dqRate)}</TableCell>
                 <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.wrongNumberRate)}</TableCell>

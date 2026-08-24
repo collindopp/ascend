@@ -16,7 +16,7 @@ const POLL_INTERVAL_MS = 8000;
 function formatValue(kpi: LeaderboardKpi, value: number | null): string {
   if (value === null) return "—";
   if (kpi === "setRate") return formatPercent(value);
-  if (kpi === "appointments" || kpi === "conversations") return formatInt(value);
+  if (kpi === "appointments" || kpi === "conversations" || kpi === "textAppointments") return formatInt(value);
   return formatRate(value);
 }
 

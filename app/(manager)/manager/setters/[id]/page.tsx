@@ -24,9 +24,10 @@ export default async function SetterDetailPage({ params, searchParams }: PagePro
         <DateRangeFilter />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <MetricDisplay label="Conversations" value={formatInt(detail.totals.conversations)} size="lg" />
         <MetricDisplay label="Appointments" value={formatInt(detail.totals.appointments)} size="lg" tone="positive" />
+        <MetricDisplay label="Text Appointments" value={formatInt(detail.textAppointments)} size="lg" tone="positive" />
         <MetricDisplay label="Set Rate" value={formatPercent(detail.metrics.setRateFromConversations)} size="lg" />
         <MetricDisplay label="Appointments / Hour" value={formatRate(detail.metrics.appointmentsPerHour)} size="lg" />
       </div>

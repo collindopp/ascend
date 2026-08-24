@@ -18,6 +18,8 @@ function rankValue(kpi: LeaderboardKpi, row: Awaited<ReturnType<typeof getSetter
       return meetsHourlyRankingThreshold(row.durationSeconds) ? row.metrics.appointmentsPerHour : null;
     case "conversationsPerHour":
       return meetsHourlyRankingThreshold(row.durationSeconds) ? row.metrics.conversationsPerHour : null;
+    case "textAppointments":
+      return row.textAppointments;
   }
 }
 
