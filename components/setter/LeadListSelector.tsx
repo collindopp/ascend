@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { startSessionAction } from "@/lib/sessions/actions";
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
+import { LogTextAppointmentButton } from "@/components/setter/LogTextAppointmentButton";
 import { formatPercent, formatInt } from "@/lib/format/number";
 import type { LeadListWithStats } from "@/lib/lead-lists/queries";
 
@@ -60,9 +61,12 @@ export function LeadListSelector({ leadLists }: { leadLists: LeadListWithStats[]
               </div>
             </div>
           </div>
-          <Button onClick={() => handleSelect(list.id)} disabled={isPending} variant="primary" className="w-full">
-            {isPending && pendingId === list.id ? "Starting…" : "Start session"}
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button onClick={() => handleSelect(list.id)} disabled={isPending} variant="primary" className="w-full">
+              {isPending && pendingId === list.id ? "Starting…" : "Start session"}
+            </Button>
+            <LogTextAppointmentButton leadListId={list.id} leadListName={list.name} />
+          </div>
         </div>
       ))}
     </div>

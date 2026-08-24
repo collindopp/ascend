@@ -16,6 +16,7 @@ export const EVENT_TYPE_LABELS: Record<string, string> = {
   NOT_INTERESTED: "Not Interested",
   FOLLOW_UP: "Follow Up",
   UNDO: "Undo",
+  TEXT_APPOINTMENT: "Text Appointment",
 };
 
 export interface ActiveNowRow {
@@ -78,6 +79,7 @@ export interface RepActivityRow {
   durationSeconds: number;
   taps: number;
   undos: number;
+  textAppointments: number;
   tapsPerHour: number | null;
   lastActiveAt: Date | null;
 }
@@ -88,40 +90,77 @@ export async function getRepActivitySummary(range: DateRange): Promise<RepActivi
   const grouped = groupBy(sessionRows, "setterId");
   const sessionToSetter = new Map(sessionRows.map((r) => [r.id, r.setterId]));
 
-  const events =
+  const [events, textAppointments] = await Promise.all([
     sessionRows.length === 0
-      ? []
-      : await prisma.sessionEvent.findMany({
+      ? Promise.resolve([])
+      : prisma.sessionEvent.findMany({
           where: { sessionId: { in: sessionRows.map((r) => r.id) } },
           select: { sessionId: true, type: true, createdAt: true },
-        });
+        }),
+    prisma.textAppointment.findMany({
+      where: { createdAt: { gte: range.start, lte: range.end } },
+      select: { setterId: true, createdAt: true },
+    }),
+  ]);
 
-  const perSetter = new Map<string, { taps: number; undos: number; lastActiveAt: Date | null }>();
+  const perSetter = new Map<string, { taps: number; undos: number; textAppointments: number; lastActiveAt: Date | null }>();
+  function bucketFor(setterId: string) {
+    const bucket = perSetter.get(setterId) ?? { taps: 0, undos: 0, textAppointments: 0, lastActiveAt: null };
+    perSetter.set(setterId, bucket);
+    return bucket;
+  }
   for (const e of events) {
     const setterId = sessionToSetter.get(e.sessionId);
     if (!setterId) continue;
-    const bucket = perSetter.get(setterId) ?? { taps: 0, undos: 0, lastActiveAt: null };
+    const bucket = bucketFor(setterId);
     if (e.type === "UNDO") bucket.undos += 1;
     else bucket.taps += 1;
     if (!bucket.lastActiveAt || e.createdAt > bucket.lastActiveAt) bucket.lastActiveAt = e.createdAt;
-    perSetter.set(setterId, bucket);
+  }
+  for (const t of textAppointments) {
+    const bucket = bucketFor(t.setterId);
+    bucket.textAppointments += 1;
+    if (!bucket.lastActiveAt || t.createdAt > bucket.lastActiveAt) bucket.lastActiveAt = t.createdAt;
   }
 
-  return grouped
-    .map((g) => {
-      const activity = perSetter.get(g.id) ?? { taps: 0, undos: 0, lastActiveAt: null };
-      return {
-        id: g.id,
-        name: g.name,
-        sessionsCount: g.sessionsCount,
-        durationSeconds: g.durationSeconds,
-        taps: activity.taps,
-        undos: activity.undos,
-        tapsPerHour: g.durationSeconds > 0 ? (activity.taps / g.durationSeconds) * 3600 : null,
-        lastActiveAt: activity.lastActiveAt,
-      };
-    })
-    .sort((a, b) => b.taps - a.taps);
+  // A rep who only logged text appointments (no calling sessions in range) wouldn't
+  // otherwise appear here, since `grouped` is built from CallingSession rows.
+  const allIds = new Set([...grouped.map((g) => g.id), ...perSetter.keys()]);
+  const missingIds = [...allIds].filter((id) => !grouped.some((g) => g.id === id));
+  const missingSetters = missingIds.length === 0
+    ? []
+    : await prisma.user.findMany({ where: { id: { in: missingIds } }, select: { id: true, name: true } });
+
+  const rows: RepActivityRow[] = grouped.map((g) => {
+    const activity = perSetter.get(g.id) ?? { taps: 0, undos: 0, textAppointments: 0, lastActiveAt: null };
+    return {
+      id: g.id,
+      name: g.name,
+      sessionsCount: g.sessionsCount,
+      durationSeconds: g.durationSeconds,
+      taps: activity.taps,
+      undos: activity.undos,
+      textAppointments: activity.textAppointments,
+      tapsPerHour: g.durationSeconds > 0 ? (activity.taps / g.durationSeconds) * 3600 : null,
+      lastActiveAt: activity.lastActiveAt,
+    };
+  });
+  for (const setter of missingSetters) {
+    const activity = perSetter.get(setter.id) ?? { taps: 0, undos: 0, textAppointments: 0, lastActiveAt: null };
+    rows.push({
+      id: setter.id,
+      name: setter.name,
+      sessionsCount: 0,
+      durationSeconds: 0,
+      taps: 0,
+      undos: 0,
+      textAppointments: activity.textAppointments,
+      tapsPerHour: null,
+      lastActiveAt: activity.lastActiveAt,
+    });
+  }
+
+  return rows.sort((a, b) => b.taps - a.taps);
 }
 
 export interface ActivityFeedFilters {
@@ -131,10 +170,17 @@ export interface ActivityFeedFilters {
   pageSize: number;
 }
 
-function buildFeedWhere(filters: Pick<ActivityFeedFilters, "range" | "setterId">) {
+function buildEventWhere(filters: Pick<ActivityFeedFilters, "range" | "setterId">) {
   return {
     createdAt: { gte: filters.range.start, lte: filters.range.end },
     ...(filters.setterId ? { session: { setterId: filters.setterId } } : {}),
+  };
+}
+
+function buildTextWhere(filters: Pick<ActivityFeedFilters, "range" | "setterId">) {
+  return {
+    createdAt: { gte: filters.range.start, lte: filters.range.end },
+    ...(filters.setterId ? { setterId: filters.setterId } : {}),
   };
 }
 
@@ -145,10 +191,11 @@ export interface ActivityFeedRow {
   setterId: string;
   setterName: string;
   leadListName: string;
-  sessionId: string;
+  sessionId: string | null;
+  note: string | null;
 }
 
-function mapFeedRow(e: {
+function mapEventRow(e: {
   id: string;
   type: string;
   createdAt: Date;
@@ -162,29 +209,75 @@ function mapFeedRow(e: {
     setterName: e.session.setter.name,
     leadListName: e.session.leadList.name,
     sessionId: e.session.id,
+    note: null,
   };
 }
 
-export async function getActivityFeed(filters: ActivityFeedFilters) {
-  const where = buildFeedWhere(filters);
+function mapTextRow(t: {
+  id: string;
+  createdAt: Date;
+  note: string | null;
+  setter: { id: string; name: string };
+  leadList: { name: string };
+}): ActivityFeedRow {
+  return {
+    id: t.id,
+    type: "TEXT_APPOINTMENT",
+    createdAt: t.createdAt,
+    setterId: t.setter.id,
+    setterName: t.setter.name,
+    leadListName: t.leadList.name,
+    sessionId: null,
+    note: t.note,
+  };
+}
 
-  const [rows, total] = await Promise.all([
+const eventInclude = {
+  session: {
+    select: { id: true, setter: { select: { id: true, name: true } }, leadList: { select: { name: true } } },
+  },
+} as const;
+
+const textInclude = {
+  setter: { select: { id: true, name: true } },
+  leadList: { select: { name: true } },
+} as const;
+
+// Two independent tables can't be paginated with a single SQL query — every
+// row from both, within the range/filter, is pulled and merged in memory,
+// then sliced for the page. Comfortably fine at this team's scale (a merge
+// cap far above any realistic range's volume); exports use the same cap.
+const MERGE_ROW_CAP = 5_000;
+
+export async function getActivityFeed(filters: ActivityFeedFilters) {
+  const eventWhere = buildEventWhere(filters);
+  const textWhere = buildTextWhere(filters);
+
+  const [events, texts] = await Promise.all([
     prisma.sessionEvent.findMany({
-      where,
-      include: {
-        session: {
-          select: { id: true, setter: { select: { id: true, name: true } }, leadList: { select: { name: true } } },
-        },
-      },
+      where: eventWhere,
+      include: eventInclude,
       orderBy: { createdAt: "desc" },
-      skip: (filters.page - 1) * filters.pageSize,
-      take: filters.pageSize,
+      take: MERGE_ROW_CAP,
     }),
-    prisma.sessionEvent.count({ where }),
+    prisma.textAppointment.findMany({
+      where: textWhere,
+      include: textInclude,
+      orderBy: { createdAt: "desc" },
+      take: MERGE_ROW_CAP,
+    }),
   ]);
 
+  const merged = [...events.map(mapEventRow), ...texts.map(mapTextRow)].sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  );
+
+  const total = merged.length;
+  const start = (filters.page - 1) * filters.pageSize;
+  const rows = merged.slice(start, start + filters.pageSize);
+
   return {
-    rows: rows.map(mapFeedRow),
+    rows,
     total,
     pageCount: Math.max(1, Math.ceil(total / filters.pageSize)),
   };
@@ -194,15 +287,22 @@ const EXPORT_ROW_CAP = 20_000;
 
 /** Unpaginated — for CSV export, capped well above any realistic internal-team volume. */
 export async function getActivityFeedForExport(filters: Pick<ActivityFeedFilters, "range" | "setterId">) {
-  const rows = await prisma.sessionEvent.findMany({
-    where: buildFeedWhere(filters),
-    include: {
-      session: {
-        select: { id: true, setter: { select: { id: true, name: true } }, leadList: { select: { name: true } } },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    take: EXPORT_ROW_CAP,
-  });
-  return rows.map(mapFeedRow);
+  const [events, texts] = await Promise.all([
+    prisma.sessionEvent.findMany({
+      where: buildEventWhere(filters),
+      include: eventInclude,
+      orderBy: { createdAt: "desc" },
+      take: EXPORT_ROW_CAP,
+    }),
+    prisma.textAppointment.findMany({
+      where: buildTextWhere(filters),
+      include: textInclude,
+      orderBy: { createdAt: "desc" },
+      take: EXPORT_ROW_CAP,
+    }),
+  ]);
+
+  return [...events.map(mapEventRow), ...texts.map(mapTextRow)].sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  );
 }

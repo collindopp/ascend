@@ -22,6 +22,7 @@ export async function GET(request: Request) {
     { key: "setter", label: "Rep", value: (r) => r.setterName },
     { key: "type", label: "Event", value: (r) => EVENT_TYPE_LABELS[r.type] ?? r.type },
     { key: "leadList", label: "Lead List", value: (r) => r.leadListName },
+    { key: "note", label: "Note", value: (r) => r.note },
     { key: "sessionId", label: "Session ID", value: (r) => r.sessionId },
   ]);
 

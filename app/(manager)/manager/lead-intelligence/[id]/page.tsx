@@ -28,9 +28,10 @@ export default async function LeadListDetailPage({ params, searchParams }: PageP
         <DateRangeFilter />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <MetricDisplay label="Conversations" value={formatInt(detail.totals.conversations)} size="lg" />
         <MetricDisplay label="Appointments" value={formatInt(detail.totals.appointments)} size="lg" tone="positive" />
+        <MetricDisplay label="Text Appointments" value={formatInt(detail.textAppointments)} size="lg" tone="positive" />
         <MetricDisplay label="Set Rate" value={formatPercent(detail.metrics.setRateFromConversations)} size="lg" />
       </div>
 
@@ -66,7 +67,14 @@ export default async function LeadListDetailPage({ params, searchParams }: PageP
                   className="flex items-center justify-between py-2.5 hover:text-accent"
                 >
                   <span className="text-sm text-text-primary">{s.name}</span>
-                  <span className="font-mono text-sm tabular-nums text-text-secondary">{formatPercent(s.setRate)}</span>
+                  <span className="flex items-center gap-4">
+                    {s.textAppointments > 0 && (
+                      <span className="font-mono text-xs tabular-nums text-text-tertiary">
+                        {formatInt(s.textAppointments)} text
+                      </span>
+                    )}
+                    <span className="font-mono text-sm tabular-nums text-text-secondary">{formatPercent(s.setRate)}</span>
+                  </span>
                 </Link>
               ))}
             </div>

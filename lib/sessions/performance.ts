@@ -7,7 +7,7 @@ import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 export interface PersonalPerformance {
   allTime: RawTotals & { sessionsCount: number };
   metrics: ReturnType<typeof deriveMetrics>;
-  extras: { pickUps: number; notInterested: number; followUp: number };
+  extras: { pickUps: number; notInterested: number; followUp: number; textAppointments: number };
   teamAverageSetRate: number | null;
   bestSession: {
     id: string;
@@ -43,8 +43,9 @@ export async function getPersonalPerformance(setterId: string): Promise<Personal
       pickUps: acc.pickUps + a.pickUps,
       notInterested: acc.notInterested + a.notInterested,
       followUp: acc.followUp + a.followUp,
+      textAppointments: acc.textAppointments + a.textAppointments,
     }),
-    { pickUps: 0, notInterested: 0, followUp: 0 },
+    { pickUps: 0, notInterested: 0, followUp: 0, textAppointments: 0 },
   );
 
   // Team average set rate across all setters, all-time — for the "vs team" comparison.

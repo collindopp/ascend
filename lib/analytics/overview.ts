@@ -9,7 +9,13 @@ export async function getTeamOverview(range: DateRange) {
   const totals = sumTotals(rows);
   const metrics = deriveMetrics(totals);
 
-  const activeSessionsCount = await prisma.callingSession.count({ where: { status: "ACTIVE" } });
+  const [activeSessionsCount, textAppointmentsAgg] = await Promise.all([
+    prisma.callingSession.count({ where: { status: "ACTIVE" } }),
+    prisma.dailyAggregate.aggregate({
+      where: { date: { gte: range.start, lte: range.end } },
+      _sum: { textAppointments: true },
+    }),
+  ]);
   const settersActiveInRange = new Set(rows.map((r) => r.setterId)).size;
 
   const bySetter = groupBy(rows, "setterId").sort((a, b) => b.appointments - a.appointments);
@@ -19,6 +25,7 @@ export async function getTeamOverview(range: DateRange) {
     metrics,
     activeSessionsCount,
     settersActiveInRange,
+    textAppointments: textAppointmentsAgg._sum.textAppointments ?? 0,
     topSetters: bySetter.slice(0, 5),
     sessionsCount: rows.length,
   };

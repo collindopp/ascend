@@ -63,6 +63,7 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
                 <TableHeadCell>Sessions</TableHeadCell>
                 <TableHeadCell>Active Time</TableHeadCell>
                 <TableHeadCell>Taps</TableHeadCell>
+                <TableHeadCell>Text Appts</TableHeadCell>
                 <TableHeadCell>Corrections</TableHeadCell>
                 <TableHeadCell>Taps / Hour</TableHeadCell>
                 <TableHeadCell>Last Active</TableHeadCell>
@@ -79,6 +80,7 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
                   <TableCell className="font-mono tabular-nums">{formatInt(row.sessionsCount)}</TableCell>
                   <TableCell className="font-mono tabular-nums">{formatDurationCompact(row.durationSeconds)}</TableCell>
                   <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.taps)}</TableCell>
+                  <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.textAppointments)}</TableCell>
                   <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(row.undos)}</TableCell>
                   <TableCell className="font-mono tabular-nums text-text-secondary">{formatRate(row.tapsPerHour)}</TableCell>
                   <TableCell className="text-text-tertiary">
@@ -137,9 +139,14 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
                     </TableCell>
                     <TableCell className="font-medium text-text-primary">{event.setterName}</TableCell>
                     <TableCell>
-                      <Badge tone={event.type === "UNDO" ? "warning" : "neutral"}>
+                      <Badge
+                        tone={
+                          event.type === "UNDO" ? "warning" : event.type === "TEXT_APPOINTMENT" ? "positive" : "neutral"
+                        }
+                      >
                         {EVENT_TYPE_LABELS[event.type] ?? event.type}
                       </Badge>
+                      {event.note && <span className="ml-2 text-xs text-text-tertiary">{event.note}</span>}
                     </TableCell>
                     <TableCell className="text-text-secondary">{event.leadListName}</TableCell>
                   </TableRow>

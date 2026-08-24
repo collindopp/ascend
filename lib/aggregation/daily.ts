@@ -19,26 +19,33 @@ export async function rebuildDailyAggregate(params: {
   const dayStart = startOfDay(params.date);
   const dayEnd = endOfDay(params.date);
 
-  const sessions = await prisma.callingSession.findMany({
-    where: {
-      setterId: params.setterId,
-      leadListId: params.leadListId,
-      status: "COMPLETED",
-      startedAt: { gte: dayStart, lte: dayEnd },
-    },
-    select: {
-      dials: true,
-      conversations: true,
-      appointments: true,
-      dq: true,
-      wrongNumber: true,
-      pickUps: true,
-      notInterested: true,
-      followUp: true,
-      startedAt: true,
-      endedAt: true,
-    },
-  });
+  const [sessions, textAppointments] = await Promise.all([
+    prisma.callingSession.findMany({
+      where: {
+        setterId: params.setterId,
+        leadListId: params.leadListId,
+        status: "COMPLETED",
+        startedAt: { gte: dayStart, lte: dayEnd },
+      },
+      select: {
+        dials: true,
+        conversations: true,
+        appointments: true,
+        dq: true,
+        wrongNumber: true,
+        pickUps: true,
+        notInterested: true,
+        followUp: true,
+        startedAt: true,
+        endedAt: true,
+      },
+    }),
+    // Text appointments aren't tied to a calling session — they're logged
+    // independently, so they roll into this bucket by (setter, lead list, day) alone.
+    prisma.textAppointment.count({
+      where: { setterId: params.setterId, leadListId: params.leadListId, createdAt: { gte: dayStart, lte: dayEnd } },
+    }),
+  ]);
 
   const totals = sessions.reduce(
     (acc, s) => {
@@ -65,6 +72,7 @@ export async function rebuildDailyAggregate(params: {
       pickUps: 0,
       notInterested: 0,
       followUp: 0,
+      textAppointments,
       sessionsCount: 0,
       durationSeconds: 0,
     },
@@ -98,5 +106,18 @@ export async function rebuildAggregateForSession(session: {
     date: session.startedAt,
     setterId: session.setterId,
     leadListId: session.leadListId,
+  });
+}
+
+/** Convenience wrapper called right after a text appointment is logged. */
+export async function rebuildAggregateForTextAppointment(entry: {
+  setterId: string;
+  leadListId: string;
+  createdAt: Date;
+}): Promise<void> {
+  await rebuildDailyAggregate({
+    date: entry.createdAt,
+    setterId: entry.setterId,
+    leadListId: entry.leadListId,
   });
 }

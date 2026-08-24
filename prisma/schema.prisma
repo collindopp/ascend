@@ -91,6 +91,7 @@ model User {
   createdLeadLists  LeadList[]         @relation("LeadListCreatedBy")
   auditLogs         AuditLog[]
   dailyAggregates   DailyAggregate[]
+  textAppointments  TextAppointment[]
 
   @@index([teamId])
   @@index([role])
@@ -114,6 +115,7 @@ model LeadList {
   createdBy       User?             @relation("LeadListCreatedBy", fields: [createdById], references: [id])
   callingSessions CallingSession[]
   dailyAggregates DailyAggregate[]
+  textAppointments TextAppointment[]
 
   @@index([status])
   @@map("lead_lists")
@@ -161,6 +163,22 @@ model SessionEvent {
   @@map("session_events")
 }
 
+model TextAppointment {
+  id         String   @id @default(cuid())
+  setterId   String
+  leadListId String
+  note       String?
+  createdAt  DateTime @default(now())
+
+  setter   User     @relation(fields: [setterId], references: [id])
+  leadList LeadList @relation(fields: [leadListId], references: [id])
+
+  @@index([setterId])
+  @@index([leadListId])
+  @@index([createdAt])
+  @@map("text_appointments")
+}
+
 model DailyAggregate {
   id               String   @id @default(cuid())
   date             DateTime @db.Date
@@ -174,6 +192,7 @@ model DailyAggregate {
   pickUps          Int      @default(0)
   notInterested    Int      @default(0)
   followUp         Int      @default(0)
+  textAppointments Int      @default(0)
   sessionsCount    Int      @default(0)
   durationSeconds  Int      @default(0)
   updatedAt        DateTime @updatedAt

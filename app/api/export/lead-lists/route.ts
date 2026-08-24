@@ -23,6 +23,7 @@ export async function GET(request: Request) {
     { key: "appointments", label: "Appointments", value: (r) => r.appointments },
     { key: "dq", label: "DQ", value: (r) => r.dq },
     { key: "wrongNumber", label: "Wrong #", value: (r) => r.wrongNumber },
+    { key: "textAppointments", label: "Text Appointments", value: (r) => r.textAppointments },
     { key: "setRate", label: "Set Rate", value: (r) => formatPercent(r.metrics.setRateFromConversations) },
     { key: "dqRate", label: "DQ Rate", value: (r) => formatPercent(r.metrics.dqRate) },
     { key: "wrongNumberRate", label: "Wrong # Rate", value: (r) => formatPercent(r.metrics.wrongNumberRate) },

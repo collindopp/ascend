@@ -24,9 +24,10 @@ export default async function OverviewPage({ searchParams }: PageProps<"/manager
         <DateRangeFilter />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <MetricDisplay label="Total Conversations" value={formatInt(data.totals.conversations)} size="lg" />
         <MetricDisplay label="Total Appointments" value={formatInt(data.totals.appointments)} size="lg" tone="positive" />
+        <MetricDisplay label="Text Appointments" value={formatInt(data.textAppointments)} size="lg" tone="positive" />
         <MetricDisplay label="Total DQ" value={formatInt(data.totals.dq)} size="lg" tone="muted" />
         <MetricDisplay label="Total Wrong #" value={formatInt(data.totals.wrongNumber)} size="lg" tone="muted" />
       </div>
