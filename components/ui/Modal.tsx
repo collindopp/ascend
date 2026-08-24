@@ -32,7 +32,7 @@ export function Modal({ open, onClose, title, description, children, className }
         if (e.target === ref.current) onClose();
       }}
       className={cn(
-        "m-auto w-full max-w-md rounded-[var(--radius-lg)] border border-border bg-surface-1 p-0 text-text-primary backdrop:bg-black/60",
+        "m-auto w-full max-w-md rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 p-0 text-text-primary shadow-[var(--shadow-elevated)] backdrop:bg-black/60",
         className,
       )}
     >

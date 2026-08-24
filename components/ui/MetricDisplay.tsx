@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
 
 type Size = "sm" | "md" | "lg" | "xl";
-type Tone = "default" | "positive" | "muted";
+type Tone = "default" | "positive" | "muted" | "warning" | "danger";
 
 interface MetricDisplayProps {
   label: ReactNode;
@@ -25,6 +25,8 @@ const toneClasses: Record<Tone, string> = {
   default: "text-text-primary",
   positive: "text-accent",
   muted: "text-text-secondary",
+  warning: "text-warning",
+  danger: "text-danger",
 };
 
 /**

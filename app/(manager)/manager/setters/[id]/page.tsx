@@ -6,7 +6,9 @@ import { MetricDisplay } from "@/components/ui/MetricDisplay";
 import { TrendChart } from "@/components/ui/TrendChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatInt, formatPercent, formatRate } from "@/lib/format/number";
+import { dqRateTone, wrongNumberRateTone } from "@/lib/format/tone";
 
 export default async function SetterDetailPage({ params, searchParams }: PageProps<"/manager/setters/[id]">) {
   const { id } = await params;
@@ -17,9 +19,12 @@ export default async function SetterDetailPage({ params, searchParams }: PagePro
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-lg font-semibold text-text-primary">{detail.setter.name}</h1>
-          <p className="mt-1 text-sm text-text-tertiary">{DATE_RANGE_LABELS[preset]} · {detail.sessionsCount} sessions</p>
+        <div className="flex items-center gap-3">
+          <Avatar name={detail.setter.name} size="md" />
+          <div>
+            <h1 className="text-lg font-semibold text-text-primary">{detail.setter.name}</h1>
+            <p className="mt-1 text-sm text-text-tertiary">{DATE_RANGE_LABELS[preset]} · {detail.sessionsCount} sessions</p>
+          </div>
         </div>
         <DateRangeFilter />
       </div>
@@ -35,8 +40,13 @@ export default async function SetterDetailPage({ params, searchParams }: PagePro
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <MetricDisplay label="DQ" value={formatInt(detail.totals.dq)} size="sm" tone="muted" />
         <MetricDisplay label="Wrong #" value={formatInt(detail.totals.wrongNumber)} size="sm" tone="muted" />
-        <MetricDisplay label="DQ Rate" value={formatPercent(detail.metrics.dqRate)} size="sm" />
-        <MetricDisplay label="Wrong # Rate" value={formatPercent(detail.metrics.wrongNumberRate)} size="sm" />
+        <MetricDisplay label="DQ Rate" value={formatPercent(detail.metrics.dqRate)} size="sm" tone={dqRateTone(detail.metrics.dqRate)} />
+        <MetricDisplay
+          label="Wrong # Rate"
+          value={formatPercent(detail.metrics.wrongNumberRate)}
+          size="sm"
+          tone={wrongNumberRateTone(detail.metrics.wrongNumberRate)}
+        />
       </div>
 
       <Card>

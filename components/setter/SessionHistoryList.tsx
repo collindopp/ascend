@@ -16,7 +16,7 @@ interface HistorySessionRow {
 
 export function SessionHistoryList({ sessions }: { sessions: HistorySessionRow[] }) {
   return (
-    <div className="flex flex-col divide-y divide-border-subtle rounded-[var(--radius-lg)] border border-border bg-surface-1">
+    <div className="flex flex-col divide-y divide-border-subtle rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 shadow-[var(--shadow-card)]">
       {sessions.map((session) => {
         const durationSeconds = session.endedAt
           ? Math.max(0, Math.round((session.endedAt.getTime() - session.startedAt.getTime()) / 1000))

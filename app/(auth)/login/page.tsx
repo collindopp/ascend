@@ -9,7 +9,7 @@ export default function LoginPage() {
           <Logo className="h-6 w-auto text-text-primary" />
           <p className="mt-3 text-sm text-text-tertiary">Setter performance & lead intelligence</p>
         </div>
-        <div className="rounded-[var(--radius-lg)] border border-border bg-surface-1 p-6">
+        <div className="rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 p-6 shadow-[var(--shadow-elevated)]">
           <LoginForm />
         </div>
       </div>

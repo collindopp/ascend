@@ -5,6 +5,7 @@ import Link from "next/link";
 import { fetchActiveNow } from "@/lib/analytics/activity-live";
 import type { ActiveNowRow } from "@/lib/analytics/activity";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatDurationCompact, formatInt } from "@/lib/format/number";
 import { cn } from "@/lib/utils/cn";
 
@@ -44,7 +45,7 @@ export function ActiveNowPanel({ initialRows }: { initialRows: ActiveNowRow[] })
   }, [updatedAt]);
 
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-border bg-surface-1 p-5">
+    <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 p-5 shadow-[var(--shadow-card)]">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-text-primary">Active Now</h2>
         <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
@@ -63,9 +64,12 @@ export function ActiveNowPanel({ initialRows }: { initialRows: ActiveNowRow[] })
               href={`/manager/setters/${row.setterId}`}
               className="flex flex-wrap items-center justify-between gap-3 py-3 transition-colors duration-[var(--duration-fast)] hover:bg-surface-2/60"
             >
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium text-text-primary">{row.setterName}</span>
-                <span className="text-xs text-text-tertiary">{row.leadListName}</span>
+              <div className="flex items-center gap-2.5">
+                <Avatar name={row.setterName} size="sm" />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-medium text-text-primary">{row.setterName}</span>
+                  <span className="text-xs text-text-tertiary">{row.leadListName}</span>
+                </div>
               </div>
               <div className="flex items-center gap-4">
                 <span className="font-mono text-xs tabular-nums text-text-secondary">

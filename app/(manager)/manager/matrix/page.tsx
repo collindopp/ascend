@@ -47,7 +47,7 @@ export default async function MatrixPage({ searchParams }: PageProps<"/manager/m
       {setters.length === 0 || grid.length === 0 ? (
         <EmptyState title="Not enough data" description="No setters or lead lists with activity in this range." />
       ) : (
-        <div className="w-full overflow-x-auto rounded-[var(--radius-lg)] border border-border">
+        <div className="w-full overflow-x-auto rounded-[var(--radius-lg)] border border-border shadow-[var(--shadow-card)]">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border">

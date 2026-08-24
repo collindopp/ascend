@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { LocalDateTime } from "@/components/ui/LocalDateTime";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatInt, formatDurationCompact, formatRate } from "@/lib/format/number";
 
 const PAGE_SIZE = 30;
@@ -74,7 +75,8 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
               {summary.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell className="font-medium text-text-primary">
-                    <Link href={`/manager/setters/${row.id}`} className="hover:underline">
+                    <Link href={`/manager/setters/${row.id}`} className="flex items-center gap-2.5 hover:text-accent">
+                      <Avatar name={row.name} size="sm" />
                       {row.name}
                     </Link>
                   </TableCell>

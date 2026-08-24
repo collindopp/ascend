@@ -5,7 +5,10 @@ import { DateRangeFilter } from "@/components/manager/DateRangeFilter";
 import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LinkButton } from "@/components/ui/LinkButton";
+import { Avatar } from "@/components/ui/Avatar";
+import { Sparkline } from "@/components/ui/Sparkline";
 import { formatInt, formatPercent, formatRate } from "@/lib/format/number";
+import { dqRateTone, wrongNumberRateTone, toneTextClass } from "@/lib/format/tone";
 
 export default async function SettersPage({ searchParams }: PageProps<"/manager/setters">) {
   const params = await searchParams;
@@ -38,6 +41,7 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
           <TableHead>
             <tr>
               <TableHeadCell>Setter</TableHeadCell>
+              <TableHeadCell>7-Day Trend</TableHeadCell>
               <TableHeadCell>Conversations</TableHeadCell>
               <TableHeadCell>Appointments</TableHeadCell>
               <TableHeadCell>Text Appts</TableHeadCell>
@@ -51,16 +55,24 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
             {rows.map((row) => (
               <TableRow key={row.id}>
                 <TableCell>
-                  <Link href={`/manager/setters/${row.id}`} className="font-medium text-text-primary hover:text-accent">
+                  <Link href={`/manager/setters/${row.id}`} className="flex items-center gap-2.5 font-medium text-text-primary hover:text-accent">
+                    <Avatar name={row.name} size="sm" />
                     {row.name}
                   </Link>
+                </TableCell>
+                <TableCell>
+                  <Sparkline values={row.sparkline} />
                 </TableCell>
                 <TableCell className="font-mono tabular-nums">{formatInt(row.conversations)}</TableCell>
                 <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.appointments)}</TableCell>
                 <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.textAppointments)}</TableCell>
                 <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.setRateFromConversations)}</TableCell>
-                <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.dqRate)}</TableCell>
-                <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.wrongNumberRate)}</TableCell>
+                <TableCell className={`font-mono tabular-nums ${toneTextClass(dqRateTone(row.metrics.dqRate))}`}>
+                  {formatPercent(row.metrics.dqRate)}
+                </TableCell>
+                <TableCell className={`font-mono tabular-nums ${toneTextClass(wrongNumberRateTone(row.metrics.wrongNumberRate))}`}>
+                  {formatPercent(row.metrics.wrongNumberRate)}
+                </TableCell>
                 <TableCell className="font-mono tabular-nums">{formatRate(row.metrics.appointmentsPerHour)}</TableCell>
               </TableRow>
             ))}

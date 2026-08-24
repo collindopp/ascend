@@ -6,7 +6,9 @@ import { DateRangeFilter } from "@/components/manager/DateRangeFilter";
 import { MetricDisplay } from "@/components/ui/MetricDisplay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatInt, formatPercent, formatRate } from "@/lib/format/number";
+import { dqRateTone, wrongNumberRateTone } from "@/lib/format/tone";
 
 export default async function OverviewPage({ searchParams }: PageProps<"/manager/overview">) {
   const params = await searchParams;
@@ -34,8 +36,18 @@ export default async function OverviewPage({ searchParams }: PageProps<"/manager
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <MetricDisplay label="Team Set Rate" value={formatPercent(data.metrics.setRateFromConversations)} size="sm" />
-        <MetricDisplay label="Team DQ Rate" value={formatPercent(data.metrics.dqRate)} size="sm" />
-        <MetricDisplay label="Team Wrong # Rate" value={formatPercent(data.metrics.wrongNumberRate)} size="sm" />
+        <MetricDisplay
+          label="Team DQ Rate"
+          value={formatPercent(data.metrics.dqRate)}
+          size="sm"
+          tone={dqRateTone(data.metrics.dqRate)}
+        />
+        <MetricDisplay
+          label="Team Wrong # Rate"
+          value={formatPercent(data.metrics.wrongNumberRate)}
+          size="sm"
+          tone={wrongNumberRateTone(data.metrics.wrongNumberRate)}
+        />
         <MetricDisplay label="Appointments / Hour" value={formatRate(data.metrics.appointmentsPerHour)} size="sm" />
       </div>
 
@@ -80,6 +92,7 @@ export default async function OverviewPage({ searchParams }: PageProps<"/manager
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-4 font-mono text-xs text-text-tertiary">{i + 1}</span>
+                    <Avatar name={setter.name} size="sm" />
                     <span className="text-sm text-text-primary">{setter.name}</span>
                   </div>
                   <span className="font-mono text-sm tabular-nums text-accent">{formatInt(setter.appointments)}</span>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { fetchWeeklyGoalProgress } from "@/lib/goals/actions";
 import type { WeeklyGoalRow } from "@/lib/goals/queries";
 import { LocalDateTime } from "@/components/ui/LocalDateTime";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatInt } from "@/lib/format/number";
 import { cn } from "@/lib/utils/cn";
 
@@ -43,7 +44,7 @@ export function WeeklyGoalsBoard({ initialRows, weekStartIso, weekEndIso }: Week
   const rankable = rows.filter((r) => r.target !== null && r.target > 0);
 
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-border bg-surface-1 p-5">
+    <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 p-5 shadow-[var(--shadow-card)]">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold text-text-primary">Weekly Sets Goal</h2>
@@ -75,6 +76,7 @@ export function WeeklyGoalsBoard({ initialRows, weekStartIso, weekEndIso }: Week
                     <span className={cn("w-4 font-mono text-xs tabular-nums", rank ? "text-text-tertiary" : "text-text-disabled")}>
                       {rank ?? "—"}
                     </span>
+                    <Avatar name={row.name} size="sm" />
                     <span className="text-sm font-medium text-text-primary">{row.name}</span>
                     {met && (
                       <span className="rounded-full bg-accent-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent">

@@ -6,6 +6,7 @@ import { setWeeklyGoalAction } from "@/lib/goals/actions";
 import { useToast } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { TableRow, TableCell } from "@/components/ui/Table";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatInt } from "@/lib/format/number";
 
 interface WeeklyGoalRowProps {
@@ -35,7 +36,12 @@ export function WeeklyGoalRow({ setterId, setterName, currentSets, initialTarget
 
   return (
     <TableRow>
-      <TableCell className="font-medium text-text-primary">{setterName}</TableCell>
+      <TableCell className="font-medium text-text-primary">
+        <div className="flex items-center gap-2.5">
+          <Avatar name={setterName} size="sm" />
+          {setterName}
+        </div>
+      </TableCell>
       <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(currentSets)} so far</TableCell>
       <TableCell>
         <div className="flex items-center gap-2">

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/client";
 import { deriveMetrics, setRateFromConversations, sumTotals } from "@/lib/metrics/core";
 import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 import { fetchSessionsInRange, groupBy } from "@/lib/analytics/queries";
+import { fetchLeadListSparklines, EMPTY_SPARKLINE } from "@/lib/analytics/sparkline";
 import type { DateRange } from "@/lib/utils/date-range";
 
 /**
@@ -22,12 +23,17 @@ async function fetchTextAppointmentsByLeadList(range: DateRange): Promise<Map<st
 }
 
 export async function getLeadListRows(range: DateRange) {
-  const [rows, textTotals] = await Promise.all([fetchSessionsInRange(range), fetchTextAppointmentsByLeadList(range)]);
+  const [rows, textTotals, sparklines] = await Promise.all([
+    fetchSessionsInRange(range),
+    fetchTextAppointmentsByLeadList(range),
+    fetchLeadListSparklines(),
+  ]);
   const grouped = groupBy(rows, "leadListId").map((l) => ({
     ...l,
     metrics: deriveMetrics(l),
     rankEligible: meetsSetRateThreshold(l.conversations),
     textAppointments: textTotals.get(l.id) ?? 0,
+    sparkline: sparklines.get(l.id) ?? EMPTY_SPARKLINE,
   }));
 
   // A list worked purely over text (no calls at all in range) wouldn't
@@ -50,6 +56,7 @@ export async function getLeadListRows(range: DateRange) {
         metrics: deriveMetrics({ dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 }),
         rankEligible: false,
         textAppointments: textTotals.get(list.id) ?? 0,
+        sparkline: sparklines.get(list.id) ?? EMPTY_SPARKLINE,
       });
     }
   }

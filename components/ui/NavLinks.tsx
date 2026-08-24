@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
+import { NAV_ICONS } from "@/components/ui/icons";
 
 export interface NavItem {
   label: string;
@@ -16,17 +17,19 @@ export function NavLinks({ items }: { items: NavItem[] }) {
     <ul className="flex items-center gap-1 overflow-x-auto py-2 md:py-0">
       {items.map((item) => {
         const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+        const icon = NAV_ICONS[item.href]?.(!!active);
         return (
           <li key={item.href}>
             <Link
               href={item.href}
               className={cn(
-                "inline-flex h-9 items-center whitespace-nowrap rounded-[var(--radius-sm)] px-3 text-sm font-medium transition-colors duration-[var(--duration-fast)]",
+                "inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-[var(--radius-sm)] px-3 text-sm font-medium transition-colors duration-[var(--duration-fast)]",
                 active
                   ? "text-text-primary bg-surface-2"
                   : "text-text-tertiary hover:text-text-primary hover:bg-surface-1",
               )}
             >
+              {icon && <span className="[&>svg]:h-4 [&>svg]:w-4">{icon}</span>}
               {item.label}
             </Link>
           </li>

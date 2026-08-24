@@ -7,7 +7,9 @@ import { MetricDisplay } from "@/components/ui/MetricDisplay";
 import { TrendChart } from "@/components/ui/TrendChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatInt, formatPercent } from "@/lib/format/number";
+import { dqRateTone, wrongNumberRateTone } from "@/lib/format/tone";
 
 export default async function LeadListDetailPage({ params, searchParams }: PageProps<"/manager/lead-intelligence/[id]">) {
   const { id } = await params;
@@ -38,8 +40,13 @@ export default async function LeadListDetailPage({ params, searchParams }: PageP
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <MetricDisplay label="DQ" value={formatInt(detail.totals.dq)} size="md" tone="muted" />
         <MetricDisplay label="Wrong Name/Number" value={formatInt(detail.totals.wrongNumber)} size="md" tone="muted" />
-        <MetricDisplay label="DQ Rate" value={formatPercent(detail.metrics.dqRate)} size="md" />
-        <MetricDisplay label="Wrong # Rate" value={formatPercent(detail.metrics.wrongNumberRate)} size="md" />
+        <MetricDisplay label="DQ Rate" value={formatPercent(detail.metrics.dqRate)} size="md" tone={dqRateTone(detail.metrics.dqRate)} />
+        <MetricDisplay
+          label="Wrong # Rate"
+          value={formatPercent(detail.metrics.wrongNumberRate)}
+          size="md"
+          tone={wrongNumberRateTone(detail.metrics.wrongNumberRate)}
+        />
       </div>
 
       <Card>
@@ -66,7 +73,10 @@ export default async function LeadListDetailPage({ params, searchParams }: PageP
                   href={`/manager/setters/${s.id}`}
                   className="flex items-center justify-between py-2.5 hover:text-accent"
                 >
-                  <span className="text-sm text-text-primary">{s.name}</span>
+                  <span className="flex items-center gap-2.5 text-sm text-text-primary">
+                    <Avatar name={s.name} size="sm" />
+                    {s.name}
+                  </span>
                   <span className="flex items-center gap-4">
                     {s.textAppointments > 0 && (
                       <span className="font-mono text-xs tabular-nums text-text-tertiary">

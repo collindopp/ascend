@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { LocalDateTime } from "@/components/ui/LocalDateTime";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatInt, formatDurationCompact } from "@/lib/format/number";
 
 const PAGE_SIZE = 25;
@@ -88,7 +89,12 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
                 );
                 return (
                   <TableRow key={session.id}>
-                    <TableCell className="font-medium text-text-primary">{session.setter.name}</TableCell>
+                    <TableCell className="font-medium text-text-primary">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar name={session.setter.name} size="sm" />
+                        {session.setter.name}
+                      </div>
+                    </TableCell>
                     <TableCell>{session.leadList.name}</TableCell>
                     <TableCell className="text-text-tertiary">
                       <LocalDateTime

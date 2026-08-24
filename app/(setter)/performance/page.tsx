@@ -7,6 +7,7 @@ import { TrendChart } from "@/components/ui/TrendChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { LocalDateTime } from "@/components/ui/LocalDateTime";
 import { formatInt, formatPercent, formatDurationCompact } from "@/lib/format/number";
+import { dqRateTone, wrongNumberRateTone } from "@/lib/format/tone";
 
 export default async function PerformancePage() {
   const user = await requireUser();
@@ -25,7 +26,7 @@ export default async function PerformancePage() {
       </div>
 
       <div
-        className="flex flex-wrap items-end gap-8 rounded-[var(--radius-lg)] border border-border bg-surface-1 p-6 animate-fade-in-up"
+        className="flex flex-wrap items-end gap-8 rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 p-6 shadow-[var(--shadow-card)] animate-fade-in-up"
         style={{ animationDelay: "60ms" }}
       >
         <MetricDisplay
@@ -77,11 +78,17 @@ export default async function PerformancePage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 animate-fade-in-up" style={{ animationDelay: "180ms" }}>
-        <MetricDisplay label="DQ Rate" value={<AnimatedRate metricValue={perf.metrics.dqRate} formatType="percent" />} size="sm" />
+        <MetricDisplay
+          label="DQ Rate"
+          value={<AnimatedRate metricValue={perf.metrics.dqRate} formatType="percent" />}
+          size="sm"
+          tone={dqRateTone(perf.metrics.dqRate)}
+        />
         <MetricDisplay
           label="Wrong # Rate"
           value={<AnimatedRate metricValue={perf.metrics.wrongNumberRate} formatType="percent" />}
           size="sm"
+          tone={wrongNumberRateTone(perf.metrics.wrongNumberRate)}
         />
         <MetricDisplay
           label="Conversations / Hour"

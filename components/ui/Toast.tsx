@@ -52,7 +52,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={toast.id}
             role="status"
             className={cn(
-              "pointer-events-auto rounded-[var(--radius-md)] border bg-surface-1 px-4 py-3 shadow-lg animate-toast-in",
+              "pointer-events-auto rounded-[var(--radius-md)] border bg-gradient-to-b from-surface-2/40 to-surface-1 px-4 py-3 shadow-[var(--shadow-elevated)] animate-toast-in",
               toneClasses[toast.tone],
             )}
           >

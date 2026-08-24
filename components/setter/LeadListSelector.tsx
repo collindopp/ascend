@@ -35,7 +35,7 @@ export function LeadListSelector({ leadLists }: { leadLists: LeadListWithStats[]
       {leadLists.map((list, i) => (
         <div
           key={list.id}
-          className="flex flex-col justify-between gap-4 rounded-[var(--radius-lg)] border border-border bg-surface-1 p-5 animate-fade-in-up transition-[transform,border-color] duration-[var(--duration-base)] hover:-translate-y-0.5 hover:border-border-strong"
+          className="flex flex-col justify-between gap-4 rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 p-5 shadow-[var(--shadow-card)] animate-fade-in-up transition-[transform,border-color,box-shadow] duration-[var(--duration-base)] hover:-translate-y-0.5 hover:border-border-strong hover:shadow-[var(--shadow-elevated)]"
           style={{ animationDelay: `${Math.min(i * 50, MAX_STAGGER_MS)}ms` }}
         >
           <div>

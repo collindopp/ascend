@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/client";
 import { deriveMetrics, setRateFromConversations, sumTotals } from "@/lib/metrics/core";
 import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 import { fetchSessionsInRange, groupBy } from "@/lib/analytics/queries";
+import { fetchSetterSparklines, EMPTY_SPARKLINE } from "@/lib/analytics/sparkline";
 import type { DateRange } from "@/lib/utils/date-range";
 
 /**
@@ -22,11 +23,16 @@ async function fetchTextAppointmentsBySetter(range: DateRange): Promise<Map<stri
 }
 
 export async function getSetterRows(range: DateRange) {
-  const [rows, textTotals] = await Promise.all([fetchSessionsInRange(range), fetchTextAppointmentsBySetter(range)]);
+  const [rows, textTotals, sparklines] = await Promise.all([
+    fetchSessionsInRange(range),
+    fetchTextAppointmentsBySetter(range),
+    fetchSetterSparklines(),
+  ]);
   const grouped = groupBy(rows, "setterId").map((s) => ({
     ...s,
     metrics: deriveMetrics(s),
     textAppointments: textTotals.get(s.id) ?? 0,
+    sparkline: sparklines.get(s.id) ?? EMPTY_SPARKLINE,
   }));
 
   // A setter who only logged text appointments (no calls in range) wouldn't
@@ -43,6 +49,7 @@ export async function getSetterRows(range: DateRange) {
         sessionsCount: 0,
         metrics: deriveMetrics(zeroTotals),
         textAppointments: textTotals.get(setter.id) ?? 0,
+        sparkline: sparklines.get(setter.id) ?? EMPTY_SPARKLINE,
       });
     }
   }

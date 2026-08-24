@@ -9,6 +9,7 @@ import {
 import { fetchLiveLeaderboard, type LiveLeaderboardRow } from "@/lib/analytics/leaderboard-live";
 import { DATE_RANGE_LABELS, type DateRangePreset } from "@/lib/utils/date-range";
 import { formatInt, formatPercent, formatRate } from "@/lib/format/number";
+import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils/cn";
 
 const POLL_INTERVAL_MS = 8000;
@@ -175,7 +176,7 @@ export function LiveLeaderboard({
           <p className="text-sm text-text-tertiary">No activity yet for {DATE_RANGE_LABELS[preset].toLowerCase()}.</p>
         </div>
       ) : (
-        <div className="flex flex-col divide-y divide-border-subtle rounded-[var(--radius-lg)] border border-border bg-surface-1">
+        <div className="flex flex-col divide-y divide-border-subtle rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 shadow-[var(--shadow-card)]">
           {rows.map((row) => {
             const isYou = viewerId && row.id === viewerId;
             const content = (
@@ -200,6 +201,7 @@ export function LiveLeaderboard({
                   >
                     {row.rank}
                   </span>
+                  <Avatar name={row.name} size="sm" />
                   <span className={cn("text-sm font-medium", isYou ? "text-accent" : "text-text-primary")}>
                     {row.name}
                     {isYou && <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider text-accent">You</span>}
