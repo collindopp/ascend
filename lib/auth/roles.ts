@@ -3,7 +3,7 @@ import type { Role } from "@/lib/generated/prisma/enums";
 export function roleHomePath(role: Role): string {
   switch (role) {
     case "ADMIN":
-      return "/admin/users";
+      return "/manager/overview";
     case "MANAGER":
       return "/manager/overview";
     case "SETTER":
