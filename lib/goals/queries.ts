@@ -34,8 +34,13 @@ export async function getWeeklyGoalProgress(): Promise<WeeklyGoalRow[]> {
   const { start, end } = getCurrentWeekRange();
 
   const [setters, goals, aggregates] = await Promise.all([
+    // This is the one leaderboard-adjacent view built from the full roster
+    // rather than derived from activity — everywhere else naturally rolls
+    // an inactive setter off over time as their sessions age out of the
+    // selected range, but this always lists everyone. Filter here so a
+    // deactivated rep doesn't linger forever with "no goal set."
     prisma.user.findMany({
-      where: { role: { in: ["SETTER", "ADMIN"] } },
+      where: { role: { in: ["SETTER", "ADMIN"] }, active: true },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
