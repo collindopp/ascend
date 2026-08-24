@@ -139,6 +139,18 @@ export function periodOverPeriodChange(
   };
 }
 
+/**
+ * "<Setter> logged no active time yesterday." — a daily-digest check, not a
+ * range comparison: always evaluates the most recently completed day
+ * regardless of whatever date range the Overview page has selected.
+ */
+export function zeroActivityYesterday(setters: { setterId: string; setterName: string }[]): Insight[] {
+  return setters.map((s) => ({
+    id: `zero-activity-yesterday:${s.setterId}`,
+    text: `${s.setterName} logged no active time yesterday.`,
+  }));
+}
+
 /** Runs every insight generator and returns whatever the data actually supports — never fabricated. */
 export function generateInsights(input: {
   leadLists: NamedTotals[];
@@ -146,8 +158,13 @@ export function generateInsights(input: {
   current: { appointments: number };
   previous: { appointments: number };
   periodLabel: string;
+  zeroActivitySetters?: { setterId: string; setterName: string }[];
 }): Insight[] {
   const insights: Insight[] = [];
+
+  if (input.zeroActivitySetters) {
+    insights.push(...zeroActivityYesterday(input.zeroActivitySetters));
+  }
 
   const topList = topLeadListBySetRate(input.leadLists);
   if (topList) insights.push(topList);
