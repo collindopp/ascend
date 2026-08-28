@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db/client";
 import { deriveMetrics, setRateFromConversations, sumTotals } from "@/lib/metrics/core";
 import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 import { fetchSessionsInRange, groupBy } from "@/lib/analytics/queries";
-import { fetchSetterSparklines, EMPTY_SPARKLINE } from "@/lib/analytics/sparkline";
 import type { DateRange } from "@/lib/utils/date-range";
 
 /**
@@ -22,17 +21,20 @@ async function fetchTextAppointmentsBySetter(range: DateRange): Promise<Map<stri
   return new Map(rows.map((r) => [r.setterId, r._sum.textAppointments ?? 0]));
 }
 
+/**
+ * Sparklines are deliberately *not* fetched here — this feeds the live
+ * leaderboard's poll and the CSV export as well as the Setters table, and
+ * only the table draws them. The page composes them alongside instead.
+ */
 export async function getSetterRows(range: DateRange) {
-  const [rows, textTotals, sparklines] = await Promise.all([
+  const [rows, textTotals] = await Promise.all([
     fetchSessionsInRange(range),
     fetchTextAppointmentsBySetter(range),
-    fetchSetterSparklines(),
   ]);
   const grouped = groupBy(rows, "setterId").map((s) => ({
     ...s,
     metrics: deriveMetrics(s),
     textAppointments: textTotals.get(s.id) ?? 0,
-    sparkline: sparklines.get(s.id) ?? EMPTY_SPARKLINE,
   }));
 
   // A setter who only logged text appointments (no calls in range) wouldn't
@@ -49,7 +51,6 @@ export async function getSetterRows(range: DateRange) {
         sessionsCount: 0,
         metrics: deriveMetrics(zeroTotals),
         textAppointments: textTotals.get(setter.id) ?? 0,
-        sparkline: sparklines.get(setter.id) ?? EMPTY_SPARKLINE,
       });
     }
   }
@@ -61,7 +62,7 @@ export async function getSetterDetail(setterId: string, range: DateRange) {
   const setter = await prisma.user.findUnique({ where: { id: setterId }, select: { id: true, name: true, email: true } });
   if (!setter) return null;
 
-  const rangeRows = (await fetchSessionsInRange(range)).filter((r) => r.setterId === setterId);
+  const rangeRows = await fetchSessionsInRange(range, undefined, { setterId });
   const totals = sumTotals(rangeRows);
   const metrics = deriveMetrics(totals);
 

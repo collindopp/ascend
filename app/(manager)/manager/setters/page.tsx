@@ -7,13 +7,14 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Sparkline } from "@/components/ui/Sparkline";
+import { fetchSetterSparklines, EMPTY_SPARKLINE } from "@/lib/analytics/sparkline";
 import { formatInt, formatPercent, formatRate } from "@/lib/format/number";
 import { dqRateTone, wrongNumberRateTone, toneTextClass } from "@/lib/format/tone";
 
 export default async function SettersPage({ searchParams }: PageProps<"/manager/setters">) {
   const params = await searchParams;
   const { preset, range } = parseRangeParam(params);
-  const rows = await getSetterRows(range);
+  const [rows, sparklines] = await Promise.all([getSetterRows(range), fetchSetterSparklines()]);
 
   const exportParams = new URLSearchParams();
   if (params.range) exportParams.set("range", String(params.range));
@@ -61,7 +62,7 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <Sparkline values={row.sparkline} />
+                  <Sparkline values={sparklines.get(row.id) ?? EMPTY_SPARKLINE} />
                 </TableCell>
                 <TableCell className="font-mono tabular-nums">{formatInt(row.conversations)}</TableCell>
                 <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.appointments)}</TableCell>

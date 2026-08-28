@@ -1,7 +1,7 @@
 import { requirePageRole } from "@/lib/auth/dal";
 import { NavShell } from "@/components/ui/NavShell";
 import { roleLabel } from "@/lib/auth/roles";
-import { closeStaleActiveSessions } from "@/lib/sessions/auto-timeout";
+import { sweepStaleActiveSessions } from "@/lib/sessions/auto-timeout";
 
 const NAV_ITEMS = [
   { label: "Tally", href: "/home" },
@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   // Opportunistic sweep — see (setter)/layout.tsx for why this lives here
   // instead of a cron job.
-  await closeStaleActiveSessions();
+  await sweepStaleActiveSessions();
 
   return (
     <NavShell items={NAV_ITEMS} roleLabel={roleLabel(user.role)} userName={user.name ?? user.email ?? ""}>

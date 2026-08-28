@@ -9,7 +9,13 @@ const eslintConfig = defineConfig([
     rules: {
       // Stub integration providers intentionally accept-but-ignore a jobType param
       // until they're implemented — leading underscore signals "unused on purpose".
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      // `varsIgnorePattern` covers the same intent for destructured values that
+      // exist only to be omitted from a rest spread (see components/ui/icons.tsx,
+      // where `active` must not reach the DOM as an unknown SVG attribute).
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
   // Override default ignores of eslint-config-next.

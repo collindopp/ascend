@@ -1,26 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+/** The value never changes reactively — it only differs between server and client. */
+const subscribe = () => () => {};
+const getServerSnapshot = () => null;
 
 /**
  * Formats a timestamp in the *viewer's* local timezone. Plain `Date#toLocaleString`
  * calls inside Server Components render using the server's timezone (UTC on
  * Vercel), not the viewer's — this fixes that by formatting client-side instead.
  *
- * Renders a blank placeholder on the server and on the client's first paint
- * (identical on both, so no hydration mismatch), then fills in the real
- * value from an effect once the component has mounted in the browser.
- * `suppressHydrationWarning` alone isn't enough here: React keeps whatever
- * text the server sent on the initial hydration pass and only replaces it
- * on a genuine re-render, so a static mismatched string would stick.
+ * `useSyncExternalStore` is the right primitive for a value that legitimately
+ * differs between server and client: it renders the server snapshot (blank)
+ * during hydration so the markup matches, then re-renders once with the real
+ * local-time string. Formatting in an effect would work too, but costs a
+ * cascading render on every instance — and there are a lot of these per table.
  */
 export function LocalDateTime({ iso, options }: { iso: string; options?: Intl.DateTimeFormatOptions }) {
-  const [formatted, setFormatted] = useState<string | null>(null);
+  const formatted = useSyncExternalStore(
+    subscribe,
+    // Returns a string, which React compares by value — stable across calls.
+    () => new Date(iso).toLocaleString("en-US", options),
+    getServerSnapshot,
+  );
 
-  useEffect(() => {
-    setFormatted(new Date(iso).toLocaleString("en-US", options));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `options` is an inline object literal at call sites; comparing by iso is sufficient
-  }, [iso]);
-
-  return <span suppressHydrationWarning>{formatted ?? " "}</span>;
+  return <span>{formatted ?? " "}</span>;
 }

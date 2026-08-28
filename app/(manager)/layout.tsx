@@ -1,7 +1,7 @@
 import { requirePageRole } from "@/lib/auth/dal";
 import { NavShell } from "@/components/ui/NavShell";
 import { roleLabel } from "@/lib/auth/roles";
-import { closeStaleActiveSessions } from "@/lib/sessions/auto-timeout";
+import { sweepStaleActiveSessions } from "@/lib/sessions/auto-timeout";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/manager/overview" },
@@ -19,7 +19,7 @@ export default async function ManagerLayout({ children }: { children: React.Reac
 
   // Opportunistic sweep — see (setter)/layout.tsx for why this lives here
   // instead of a cron job.
-  await closeStaleActiveSessions();
+  await sweepStaleActiveSessions();
 
   // Only admins also have setter access and admin-section access (see the
   // (setter) and (admin) layouts) — a plain manager clicking either would

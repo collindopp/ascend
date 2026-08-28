@@ -1,7 +1,7 @@
 import { requirePageRole } from "@/lib/auth/dal";
 import { NavShell } from "@/components/ui/NavShell";
 import { roleLabel } from "@/lib/auth/roles";
-import { closeStaleActiveSessions } from "@/lib/sessions/auto-timeout";
+import { sweepStaleActiveSessions } from "@/lib/sessions/auto-timeout";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/home" },
@@ -17,7 +17,7 @@ export default async function SetterLayout({ children }: { children: React.React
   // Opportunistic sweep — piggybacks on ordinary traffic instead of a cron
   // job, so a setter never gets silently redirected back into a session
   // that's actually been abandoned for hours.
-  await closeStaleActiveSessions();
+  await sweepStaleActiveSessions();
 
   return (
     <NavShell

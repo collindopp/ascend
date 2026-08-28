@@ -59,7 +59,8 @@ export function AnimatedNumber({
     }
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `from` intentionally reads the ref at effect-start, not a reactive dep
+    // `from` intentionally reads the ref at effect-start rather than being a
+    // reactive dep — re-running on every displayed frame would restart the tween.
   }, [value, durationMs]);
 
   return <span className={className}>{format(display)}</span>;

@@ -13,8 +13,10 @@ import { dqRateTone, wrongNumberRateTone } from "@/lib/format/tone";
 export default async function OverviewPage({ searchParams }: PageProps<"/manager/overview">) {
   const params = await searchParams;
   const { preset, range } = parseRangeParam(params);
-  const data = await getTeamOverview(range);
-  const insights = await getOverviewInsights(range, DATE_RANGE_LABELS[preset].toLowerCase());
+  const [data, insights] = await Promise.all([
+    getTeamOverview(range),
+    getOverviewInsights(range, DATE_RANGE_LABELS[preset].toLowerCase()),
+  ]);
 
   return (
     <div className="flex flex-col gap-8">

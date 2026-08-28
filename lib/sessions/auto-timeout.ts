@@ -15,15 +15,38 @@ import { writeAuditLog } from "@/lib/audit/log";
 export const AUTO_CLOSE_IDLE_MINUTES = 60;
 
 /**
+ * Floor on how often the opportunistic sweep actually touches the database.
+ * Without it the sweep queries on literally every page load in every route
+ * group, blocking each render to almost always find nothing to do. A minute
+ * of slack is invisible against a 60-minute idle threshold.
+ */
+const SWEEP_MIN_INTERVAL_MS = 60_000;
+
+/** Per-instance, like lib/rate-limit/memory.ts — see the caveat in SECURITY.md. */
+let lastSweepAt = 0;
+
+/**
+ * Rate-limited entry point for the layout sweeps. Records the attempt before
+ * awaiting, so simultaneous requests don't all sweep at once.
+ */
+export async function sweepStaleActiveSessions(): Promise<void> {
+  const now = Date.now();
+  if (now - lastSweepAt < SWEEP_MIN_INTERVAL_MS) return;
+  lastSweepAt = now;
+  await closeStaleActiveSessions();
+}
+
+/**
  * Closes every ACTIVE session that's gone idle past the threshold, using
  * each session's own last tap (or its start time, if it was never touched
  * at all) as `endedAt` — never "now". Using "now" would inflate that day's
  * duration by however long the session sat open unnoticed, which is
  * exactly the accuracy problem this feature exists to prevent.
  *
- * Called opportunistically from every route-group layout rather than a
- * cron job, so it self-heals on ordinary app traffic without needing extra
- * infrastructure — any page load by anyone sweeps the whole team.
+ * Driven opportunistically by ordinary app traffic rather than a cron job,
+ * so it self-heals without extra infrastructure — any page load by anyone
+ * sweeps the whole team. Layouts call `sweepStaleActiveSessions` rather than
+ * this directly; call this one to force a sweep regardless of throttling.
  */
 export async function closeStaleActiveSessions(idleMinutes: number = AUTO_CLOSE_IDLE_MINUTES): Promise<void> {
   const sessions = await prisma.callingSession.findMany({ where: { status: "ACTIVE" } });
@@ -43,10 +66,14 @@ export async function closeStaleActiveSessions(idleMinutes: number = AUTO_CLOSE_
     const lastActivity = lastEventMap.get(session.id) ?? session.startedAt;
     if (now - lastActivity.getTime() < cutoffMs) continue;
 
-    await prisma.callingSession.update({
-      where: { id: session.id },
+    // Guarded on status so two sweeps racing on the same session can't both
+    // "win" — the loser gets count 0 and skips, instead of redundantly
+    // rebuilding the aggregate and writing a second audit entry for one close.
+    const { count } = await prisma.callingSession.updateMany({
+      where: { id: session.id, status: "ACTIVE" },
       data: { status: "COMPLETED", endedAt: lastActivity },
     });
+    if (count === 0) continue;
 
     await rebuildAggregateForSession({
       setterId: session.setterId,

@@ -243,36 +243,45 @@ const textInclude = {
   leadList: { select: { name: true } },
 } as const;
 
-// Two independent tables can't be paginated with a single SQL query — every
-// row from both, within the range/filter, is pulled and merged in memory,
-// then sliced for the page. Comfortably fine at this team's scale (a merge
-// cap far above any realistic range's volume); exports use the same cap.
-const MERGE_ROW_CAP = 5_000;
-
+/**
+ * Two independent tables can't be paginated by a single SQL query, so the
+ * page is assembled by merging both in memory. The merge only ever needs the
+ * top `offset + pageSize` rows from each source — anything deeper than that
+ * in one table cannot place inside the requested window no matter how the
+ * two interleave — so that's the exact depth fetched, rather than pulling
+ * everything and slicing.
+ *
+ * Counts come from dedicated COUNT queries instead of the merged length:
+ * cheap on the `createdAt` indexes, and correct regardless of how many rows
+ * were actually materialized for the page.
+ */
 export async function getActivityFeed(filters: ActivityFeedFilters) {
   const eventWhere = buildEventWhere(filters);
   const textWhere = buildTextWhere(filters);
+  const depth = filters.page * filters.pageSize;
 
-  const [events, texts] = await Promise.all([
+  const [events, texts, eventCount, textCount] = await Promise.all([
     prisma.sessionEvent.findMany({
       where: eventWhere,
       include: eventInclude,
       orderBy: { createdAt: "desc" },
-      take: MERGE_ROW_CAP,
+      take: depth,
     }),
     prisma.textAppointment.findMany({
       where: textWhere,
       include: textInclude,
       orderBy: { createdAt: "desc" },
-      take: MERGE_ROW_CAP,
+      take: depth,
     }),
+    prisma.sessionEvent.count({ where: eventWhere }),
+    prisma.textAppointment.count({ where: textWhere }),
   ]);
 
   const merged = [...events.map(mapEventRow), ...texts.map(mapTextRow)].sort(
     (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
   );
 
-  const total = merged.length;
+  const total = eventCount + textCount;
   const start = (filters.page - 1) * filters.pageSize;
   const rows = merged.slice(start, start + filters.pageSize);
 
