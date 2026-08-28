@@ -64,38 +64,3 @@ export async function getDailyTimeWorked(): Promise<DailyTimeRow[]> {
     })),
   }));
 }
-
-export interface ZeroActivityRow {
-  setterId: string;
-  setterName: string;
-}
-
-/**
- * Setters (not admins — an admin's own tally use is incidental, not their
- * job, so flagging their quiet days isn't a meaningful signal) with zero
- * logged active time yesterday. Feeds the Overview daily-digest insight.
- */
-export async function getYesterdayZeroActivitySetters(): Promise<ZeroActivityRow[]> {
-  const yesterday = startOfDay(subDays(new Date(), 1));
-
-  const [setters, aggregates] = await Promise.all([
-    prisma.user.findMany({
-      where: { role: "SETTER", active: true },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.dailyAggregate.groupBy({
-      by: ["setterId"],
-      where: { date: yesterday },
-      _sum: { durationSeconds: true },
-    }),
-  ]);
-
-  const workedIds = new Set(
-    aggregates.filter((a) => (a._sum.durationSeconds ?? 0) > 0).map((a) => a.setterId),
-  );
-
-  return setters
-    .filter((s) => !workedIds.has(s.id))
-    .map((s) => ({ setterId: s.id, setterName: s.name }));
-}

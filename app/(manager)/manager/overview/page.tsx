@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getTeamOverview } from "@/lib/analytics/overview";
 import { getOverviewInsights } from "@/lib/analytics/insights";
+import { getLoggingHealth } from "@/lib/analytics/logging-health";
 import { parseRangeParam, DATE_RANGE_LABELS } from "@/lib/utils/date-range";
 import { DateRangeFilter } from "@/components/manager/DateRangeFilter";
+import { LoggingAlert } from "@/components/manager/LoggingAlert";
 import { MetricDisplay } from "@/components/ui/MetricDisplay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -13,9 +15,12 @@ import { dqRateTone, wrongNumberRateTone } from "@/lib/format/tone";
 export default async function OverviewPage({ searchParams }: PageProps<"/manager/overview">) {
   const params = await searchParams;
   const { preset, range } = parseRangeParam(params);
-  const [data, insights] = await Promise.all([
+  const [data, insights, loggingHealth] = await Promise.all([
     getTeamOverview(range),
     getOverviewInsights(range, DATE_RANGE_LABELS[preset].toLowerCase()),
+    // Deliberately not scoped to the selected range — "who is logging" is a
+    // question about right now, not about whatever window is being analysed.
+    getLoggingHealth(),
   ]);
 
   return (
@@ -27,6 +32,8 @@ export default async function OverviewPage({ searchParams }: PageProps<"/manager
         </div>
         <DateRangeFilter />
       </div>
+
+      <LoggingAlert health={loggingHealth} />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
         <MetricDisplay label="Total Conversations" value={formatInt(data.totals.conversations)} size="lg" />

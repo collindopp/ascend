@@ -5,7 +5,6 @@ import {
   settersAboveTeamAverage,
   leadListsAboveTeamAverage,
   periodOverPeriodChange,
-  zeroActivityYesterday,
   generateInsights,
   type NamedTotals,
 } from "@/lib/insights";
@@ -116,18 +115,6 @@ describe("periodOverPeriodChange", () => {
   });
 });
 
-describe("zeroActivityYesterday", () => {
-  it("flags every setter with no logged activity yesterday", () => {
-    const insights = zeroActivityYesterday([{ setterId: "s1", setterName: "Quiet Rep" }]);
-    expect(insights).toHaveLength(1);
-    expect(insights[0]?.text).toBe("Quiet Rep logged no active time yesterday.");
-  });
-
-  it("stays silent when nobody had a zero-activity day", () => {
-    expect(zeroActivityYesterday([])).toEqual([]);
-  });
-});
-
 describe("generateInsights", () => {
   it("only returns insights the underlying data actually supports", () => {
     const insights = generateInsights({
@@ -138,28 +125,5 @@ describe("generateInsights", () => {
       periodLabel: "this week",
     });
     expect(insights).toEqual([]);
-  });
-
-  it("includes zero-activity-yesterday insights first when provided", () => {
-    const insights = generateInsights({
-      leadLists: [],
-      setters: [],
-      current: { appointments: 0 },
-      previous: { appointments: 0 },
-      periodLabel: "this week",
-      zeroActivitySetters: [{ setterId: "s1", setterName: "Quiet Rep" }],
-    });
-    expect(insights[0]?.text).toBe("Quiet Rep logged no active time yesterday.");
-  });
-
-  it("omits zero-activity insights entirely when the field is left undefined", () => {
-    const insights = generateInsights({
-      leadLists: [],
-      setters: [],
-      current: { appointments: 0 },
-      previous: { appointments: 0 },
-      periodLabel: "this week",
-    });
-    expect(insights.some((i) => i.text.includes("logged no active time"))).toBe(false);
   });
 });
