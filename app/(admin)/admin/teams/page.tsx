@@ -24,14 +24,14 @@ export default async function TeamsPage() {
           <TableHead>
             <tr>
               <TableHeadCell>Name</TableHeadCell>
-              <TableHeadCell>Members</TableHeadCell>
+              <TableHeadCell numeric>Members</TableHeadCell>
             </tr>
           </TableHead>
           <TableBody>
             {teams.map((team) => (
               <TableRow key={team.id}>
                 <TableCell className="font-medium text-text-primary">{team.name}</TableCell>
-                <TableCell className="font-mono tabular-nums">{formatInt(team._count.users)}</TableCell>
+                <TableCell numeric>{formatInt(team._count.users)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

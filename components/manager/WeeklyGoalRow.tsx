@@ -42,7 +42,7 @@ export function WeeklyGoalRow({ setterId, setterName, currentSets, initialTarget
           {setterName}
         </div>
       </TableCell>
-      <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(currentSets)} so far</TableCell>
+      <TableCell numeric className="text-text-secondary">{formatInt(currentSets)} so far</TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
           <input

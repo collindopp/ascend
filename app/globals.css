@@ -129,6 +129,38 @@ body {
   animation: toast-in var(--duration-base) var(--ease-out-expo);
 }
 
+/*
+ * A light sweeping across the placeholder, rather than the whole block
+ * blinking. Reads as "loading" without the nervous flicker of an opacity
+ * pulse, and holds up when several sit stacked together.
+ */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.animate-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--surface-3) 85%, white) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 1.8s var(--ease-out-expo) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer {
+    background-image: none;
+  }
+}
+
 @keyframes live-pulse {
   0%,
   100% {

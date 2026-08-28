@@ -24,8 +24,8 @@ export default async function LeadListsPage() {
             <TableHeadCell>Name</TableHeadCell>
             <TableHeadCell>Source</TableHeadCell>
             <TableHeadCell>Location</TableHeadCell>
-            <TableHeadCell>Leads</TableHeadCell>
-            <TableHeadCell>Sessions</TableHeadCell>
+            <TableHeadCell numeric>Leads</TableHeadCell>
+            <TableHeadCell numeric>Sessions</TableHeadCell>
             <TableHeadCell>Status</TableHeadCell>
             <TableHeadCell className="text-right">Actions</TableHeadCell>
           </tr>
@@ -36,8 +36,8 @@ export default async function LeadListsPage() {
               <TableCell className="font-medium text-text-primary">{list.name}</TableCell>
               <TableCell className="text-text-secondary">{list.source}</TableCell>
               <TableCell className="text-text-secondary">{list.location ?? "—"}</TableCell>
-              <TableCell className="font-mono tabular-nums">{list.leadCount !== null ? formatInt(list.leadCount) : "—"}</TableCell>
-              <TableCell className="font-mono tabular-nums">{formatInt(list._count.callingSessions)}</TableCell>
+              <TableCell numeric>{list.leadCount !== null ? formatInt(list.leadCount) : "—"}</TableCell>
+              <TableCell numeric>{formatInt(list._count.callingSessions)}</TableCell>
               <TableCell>
                 <Badge tone={list.status === "ACTIVE" ? "positive" : "neutral"}>{list.status}</Badge>
               </TableCell>

@@ -76,12 +76,12 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
             <TableHead>
               <tr>
                 <TableHeadCell>Rep</TableHeadCell>
-                <TableHeadCell>Sessions</TableHeadCell>
-                <TableHeadCell>Active Time</TableHeadCell>
-                <TableHeadCell>Taps</TableHeadCell>
-                <TableHeadCell>Text Appts</TableHeadCell>
-                <TableHeadCell>Corrections</TableHeadCell>
-                <TableHeadCell>Taps / Hour</TableHeadCell>
+                <TableHeadCell numeric>Sessions</TableHeadCell>
+                <TableHeadCell numeric>Active Time</TableHeadCell>
+                <TableHeadCell numeric>Taps</TableHeadCell>
+                <TableHeadCell numeric>Text Appts</TableHeadCell>
+                <TableHeadCell numeric>Corrections</TableHeadCell>
+                <TableHeadCell numeric>Taps / Hour</TableHeadCell>
                 <TableHeadCell>Last Active</TableHeadCell>
               </tr>
             </TableHead>
@@ -94,12 +94,12 @@ export default async function RepActivityPage({ searchParams }: PageProps<"/mana
                       {row.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="font-mono tabular-nums">{formatInt(row.sessionsCount)}</TableCell>
-                  <TableCell className="font-mono tabular-nums">{formatDurationCompact(row.durationSeconds)}</TableCell>
-                  <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.taps)}</TableCell>
-                  <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.textAppointments)}</TableCell>
-                  <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(row.undos)}</TableCell>
-                  <TableCell className="font-mono tabular-nums text-text-secondary">{formatRate(row.tapsPerHour)}</TableCell>
+                  <TableCell numeric>{formatInt(row.sessionsCount)}</TableCell>
+                  <TableCell numeric>{formatDurationCompact(row.durationSeconds)}</TableCell>
+                  <TableCell numeric className="text-accent">{formatInt(row.taps)}</TableCell>
+                  <TableCell numeric className="text-accent">{formatInt(row.textAppointments)}</TableCell>
+                  <TableCell numeric className="text-text-secondary">{formatInt(row.undos)}</TableCell>
+                  <TableCell numeric className="text-text-secondary">{formatRate(row.tapsPerHour)}</TableCell>
                   <TableCell className="text-text-tertiary">
                     {row.lastActiveAt ? (
                       <LocalDateTime

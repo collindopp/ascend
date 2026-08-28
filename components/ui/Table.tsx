@@ -29,12 +29,26 @@ export function TableRow({
   );
 }
 
-export function TableHeadCell({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
+/**
+ * `numeric` right-aligns the column and applies the tabular mono face, so
+ * digits line up place-by-place down the column and can be compared at a
+ * glance — the convention serious financial and analytics tables follow.
+ * It also collapses the `font-mono tabular-nums` pair that was repeated on
+ * nearly every data cell in the app.
+ */
+type NumericProps = { numeric?: boolean };
+
+export function TableHeadCell({
+  className,
+  numeric,
+  ...props
+}: ThHTMLAttributes<HTMLTableCellElement> & NumericProps) {
   return (
     <th
       scope="col"
       className={cn(
-        "px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-tertiary whitespace-nowrap",
+        "px-4 py-3 text-xs font-medium uppercase tracking-wider text-text-tertiary whitespace-nowrap",
+        numeric ? "text-right" : "text-left",
         className,
       )}
       {...props}
@@ -42,10 +56,18 @@ export function TableHeadCell({ className, ...props }: ThHTMLAttributes<HTMLTabl
   );
 }
 
-export function TableCell({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
+export function TableCell({
+  className,
+  numeric,
+  ...props
+}: TdHTMLAttributes<HTMLTableCellElement> & NumericProps) {
   return (
     <td
-      className={cn("px-4 py-3 text-text-primary whitespace-nowrap", className)}
+      className={cn(
+        "px-4 py-3.5 text-text-primary whitespace-nowrap",
+        numeric && "text-right font-mono tabular-nums",
+        className,
+      )}
       {...props}
     />
   );

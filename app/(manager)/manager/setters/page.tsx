@@ -43,13 +43,13 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
             <tr>
               <TableHeadCell>Setter</TableHeadCell>
               <TableHeadCell>7-Day Trend</TableHeadCell>
-              <TableHeadCell>Conversations</TableHeadCell>
-              <TableHeadCell>Appointments</TableHeadCell>
-              <TableHeadCell>Text Appts</TableHeadCell>
-              <TableHeadCell>Set Rate</TableHeadCell>
-              <TableHeadCell>DQ Rate</TableHeadCell>
-              <TableHeadCell>Wrong # Rate</TableHeadCell>
-              <TableHeadCell>Appts / Hour</TableHeadCell>
+              <TableHeadCell numeric>Conversations</TableHeadCell>
+              <TableHeadCell numeric>Appointments</TableHeadCell>
+              <TableHeadCell numeric>Text Appts</TableHeadCell>
+              <TableHeadCell numeric>Set Rate</TableHeadCell>
+              <TableHeadCell numeric>DQ Rate</TableHeadCell>
+              <TableHeadCell numeric>Wrong # Rate</TableHeadCell>
+              <TableHeadCell numeric>Appts / Hour</TableHeadCell>
             </tr>
           </TableHead>
           <TableBody>
@@ -64,17 +64,17 @@ export default async function SettersPage({ searchParams }: PageProps<"/manager/
                 <TableCell>
                   <Sparkline values={sparklines.get(row.id) ?? EMPTY_SPARKLINE} />
                 </TableCell>
-                <TableCell className="font-mono tabular-nums">{formatInt(row.conversations)}</TableCell>
-                <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.appointments)}</TableCell>
-                <TableCell className="font-mono tabular-nums text-accent">{formatInt(row.textAppointments)}</TableCell>
-                <TableCell className="font-mono tabular-nums">{formatPercent(row.metrics.setRateFromConversations)}</TableCell>
-                <TableCell className={`font-mono tabular-nums ${toneTextClass(dqRateTone(row.metrics.dqRate))}`}>
+                <TableCell numeric>{formatInt(row.conversations)}</TableCell>
+                <TableCell numeric className="text-accent">{formatInt(row.appointments)}</TableCell>
+                <TableCell numeric className="text-accent">{formatInt(row.textAppointments)}</TableCell>
+                <TableCell numeric>{formatPercent(row.metrics.setRateFromConversations)}</TableCell>
+                <TableCell numeric className={toneTextClass(dqRateTone(row.metrics.dqRate))}>
                   {formatPercent(row.metrics.dqRate)}
                 </TableCell>
-                <TableCell className={`font-mono tabular-nums ${toneTextClass(wrongNumberRateTone(row.metrics.wrongNumberRate))}`}>
+                <TableCell numeric className={toneTextClass(wrongNumberRateTone(row.metrics.wrongNumberRate))}>
                   {formatPercent(row.metrics.wrongNumberRate)}
                 </TableCell>
-                <TableCell className="font-mono tabular-nums">{formatRate(row.metrics.appointmentsPerHour)}</TableCell>
+                <TableCell numeric>{formatRate(row.metrics.appointmentsPerHour)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

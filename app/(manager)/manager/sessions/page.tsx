@@ -70,14 +70,14 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
                 <TableHeadCell>Setter</TableHeadCell>
                 <TableHeadCell>Lead List</TableHeadCell>
                 <TableHeadCell>Started</TableHeadCell>
-                <TableHeadCell>Duration</TableHeadCell>
-                <TableHeadCell>Conversations</TableHeadCell>
-                <TableHeadCell>Appointments</TableHeadCell>
-                <TableHeadCell>DQ</TableHeadCell>
-                <TableHeadCell>Wrong #</TableHeadCell>
-                <TableHeadCell>Pick Ups</TableHeadCell>
-                <TableHeadCell>Not Interested</TableHeadCell>
-                <TableHeadCell>Follow Up</TableHeadCell>
+                <TableHeadCell numeric>Duration</TableHeadCell>
+                <TableHeadCell numeric>Conversations</TableHeadCell>
+                <TableHeadCell numeric>Appointments</TableHeadCell>
+                <TableHeadCell numeric>DQ</TableHeadCell>
+                <TableHeadCell numeric>Wrong #</TableHeadCell>
+                <TableHeadCell numeric>Pick Ups</TableHeadCell>
+                <TableHeadCell numeric>Not Interested</TableHeadCell>
+                <TableHeadCell numeric>Follow Up</TableHeadCell>
                 <TableHeadCell>Status</TableHeadCell>
               </tr>
             </TableHead>
@@ -102,14 +102,14 @@ export default async function SessionsExplorerPage({ searchParams }: PageProps<"
                         options={{ month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }}
                       />
                     </TableCell>
-                    <TableCell className="font-mono tabular-nums">{formatDurationCompact(durationSeconds)}</TableCell>
-                    <TableCell className="font-mono tabular-nums">{formatInt(session.conversations)}</TableCell>
-                    <TableCell className="font-mono tabular-nums text-accent">{formatInt(session.appointments)}</TableCell>
-                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.dq)}</TableCell>
-                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.wrongNumber)}</TableCell>
-                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.pickUps)}</TableCell>
-                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.notInterested)}</TableCell>
-                    <TableCell className="font-mono tabular-nums text-text-secondary">{formatInt(session.followUp)}</TableCell>
+                    <TableCell numeric>{formatDurationCompact(durationSeconds)}</TableCell>
+                    <TableCell numeric>{formatInt(session.conversations)}</TableCell>
+                    <TableCell numeric className="text-accent">{formatInt(session.appointments)}</TableCell>
+                    <TableCell numeric className="text-text-secondary">{formatInt(session.dq)}</TableCell>
+                    <TableCell numeric className="text-text-secondary">{formatInt(session.wrongNumber)}</TableCell>
+                    <TableCell numeric className="text-text-secondary">{formatInt(session.pickUps)}</TableCell>
+                    <TableCell numeric className="text-text-secondary">{formatInt(session.notInterested)}</TableCell>
+                    <TableCell numeric className="text-text-secondary">{formatInt(session.followUp)}</TableCell>
                     <TableCell>
                       <Badge tone={session.status === "ACTIVE" ? "positive" : "neutral"}>{session.status}</Badge>
                     </TableCell>

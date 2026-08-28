@@ -14,11 +14,14 @@ interface MetricDisplayProps {
   valueClassName?: string;
 }
 
+// Large mono digits set loose at default tracking; pulling them tighter as
+// they scale up keeps a big number reading as one figure rather than a row
+// of separate characters.
 const valueSizeClasses: Record<Size, string> = {
   sm: "text-xl",
-  md: "text-3xl",
-  lg: "text-5xl",
-  xl: "text-6xl md:text-7xl",
+  md: "text-3xl -tracking-[0.01em]",
+  lg: "text-5xl -tracking-[0.02em]",
+  xl: "text-6xl -tracking-[0.03em] md:text-7xl",
 };
 
 const toneClasses: Record<Tone, string> = {

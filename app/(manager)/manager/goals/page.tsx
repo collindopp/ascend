@@ -23,7 +23,7 @@ export default async function GoalsPage() {
         <TableHead>
           <tr>
             <TableHeadCell>Rep</TableHeadCell>
-            <TableHeadCell>This Week</TableHeadCell>
+            <TableHeadCell numeric>This Week</TableHeadCell>
             <TableHeadCell>Goal</TableHeadCell>
           </tr>
         </TableHead>
