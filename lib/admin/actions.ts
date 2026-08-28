@@ -12,6 +12,7 @@ import {
   createTeamSchema,
   createLeadListSchema,
   updateLeadListStatusSchema,
+  setLeadListAssignmentsSchema,
   upsertSystemSettingSchema,
 } from "@/lib/validation/admin";
 
@@ -145,6 +146,59 @@ export async function updateLeadListStatusAction(input: unknown): Promise<Action
     entityType: "LeadList",
     entityId: leadList.id,
     metadata: { status: leadList.status },
+  });
+
+  revalidatePath("/admin/lead-lists");
+  return { ok: true, data: undefined };
+}
+
+/**
+ * Replaces a list's assignment set wholesale — the modal always submits the
+ * full intended roster, so reconciling to it is simpler and more predictable
+ * than diffing adds and removes on the client.
+ *
+ * Only affects who may *call* the list going forward. Sessions already worked
+ * on it keep their history and stay visible in every manager report, so
+ * unassigning someone never rewrites what they've already done.
+ */
+export async function setLeadListAssignmentsAction(input: unknown): Promise<ActionResult> {
+  const actor = await requireActionRole(["ADMIN", "MANAGER"]);
+  const parsed = setLeadListAssignmentsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid request." };
+
+  const leadList = await prisma.leadList.findUnique({ where: { id: parsed.data.leadListId } });
+  if (!leadList) return { ok: false, error: "Lead list not found." };
+
+  // Ignore ids that aren't currently assignable setters, so a stale form
+  // can't create assignments for deactivated or non-setter accounts.
+  const setterIds = [...new Set(parsed.data.setterIds)];
+  const valid = await prisma.user.findMany({
+    where: { id: { in: setterIds }, role: "SETTER", active: true },
+    select: { id: true },
+  });
+  const validIds = valid.map((v) => v.id);
+
+  await prisma.$transaction([
+    // Drop whoever is no longer selected. With an empty selection there's no
+    // exclusion to apply, so every assignment for the list goes.
+    prisma.leadListAssignment.deleteMany({
+      where: {
+        leadListId: leadList.id,
+        ...(validIds.length > 0 ? { setterId: { notIn: validIds } } : {}),
+      },
+    }),
+    prisma.leadListAssignment.createMany({
+      data: validIds.map((setterId) => ({ leadListId: leadList.id, setterId })),
+      skipDuplicates: true,
+    }),
+  ]);
+
+  await writeAuditLog({
+    actorId: actor.id,
+    action: "LEAD_LIST_ASSIGNMENTS_CHANGED",
+    entityType: "LeadList",
+    entityId: leadList.id,
+    metadata: { name: leadList.name, assignedCount: validIds.length },
   });
 
   revalidatePath("/admin/lead-lists");

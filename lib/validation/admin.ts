@@ -8,6 +8,11 @@ export const createUserSchema = z.object({
   teamId: z.string().min(1).nullable().optional(),
 });
 
+export const setLeadListAssignmentsSchema = z.object({
+  leadListId: z.string().min(1),
+  setterIds: z.array(z.string().min(1)).max(500),
+});
+
 export const updateUserSchema = z.object({
   userId: z.string().min(1),
   role: z.enum(["ADMIN", "MANAGER", "SETTER"]).optional(),

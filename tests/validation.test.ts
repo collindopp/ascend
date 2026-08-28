@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { loginSchema } from "@/lib/validation/auth";
 import { recordEventSchema, startSessionSchema } from "@/lib/validation/sessions";
-import { createUserSchema } from "@/lib/validation/admin";
+import { createUserSchema, setLeadListAssignmentsSchema } from "@/lib/validation/admin";
 
 describe("loginSchema", () => {
   it("normalizes email casing and whitespace", () => {
@@ -69,5 +69,25 @@ describe("createUserSchema", () => {
     expect(
       createUserSchema.safeParse({ name: "A", email: "a@b.com", password: "longenough1", role: "SETTER" }).success,
     ).toBe(true);
+  });
+});
+
+describe("setLeadListAssignmentsSchema", () => {
+  it("accepts a list of setter ids", () => {
+    expect(
+      setLeadListAssignmentsSchema.safeParse({ leadListId: "list-1", setterIds: ["s1", "s2"] }).success,
+    ).toBe(true);
+  });
+
+  it("accepts an empty selection — that's how a list is restricted to nobody", () => {
+    expect(setLeadListAssignmentsSchema.safeParse({ leadListId: "list-1", setterIds: [] }).success).toBe(true);
+  });
+
+  it("requires a lead list id", () => {
+    expect(setLeadListAssignmentsSchema.safeParse({ leadListId: "", setterIds: ["s1"] }).success).toBe(false);
+  });
+
+  it("rejects a non-array selection", () => {
+    expect(setLeadListAssignmentsSchema.safeParse({ leadListId: "list-1", setterIds: "s1" }).success).toBe(false);
   });
 });

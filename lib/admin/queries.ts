@@ -29,8 +29,20 @@ export async function getTeamsForAdmin() {
 
 export async function getLeadListsForAdmin() {
   return prisma.leadList.findMany({
-    include: { _count: { select: { callingSessions: true } } },
+    include: {
+      _count: { select: { callingSessions: true } },
+      assignments: { select: { setterId: true } },
+    },
     orderBy: [{ status: "asc" }, { name: "asc" }],
+  });
+}
+
+/** Setters who can be assigned to a list — admins tally too but always see every list. */
+export async function getAssignableSetters() {
+  return prisma.user.findMany({
+    where: { role: "SETTER", active: true },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
   });
 }
 

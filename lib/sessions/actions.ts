@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/client";
 import { requireActionRole } from "@/lib/auth/guard";
 import { writeAuditLog } from "@/lib/audit/log";
 import { rebuildAggregateForSession } from "@/lib/aggregation/daily";
+import { canSetterUseLeadList } from "@/lib/lead-lists/queries";
 import { startSessionSchema, sessionIdSchema, recordEventSchema } from "@/lib/validation/sessions";
 import { checkRateLimit } from "@/lib/rate-limit/memory";
 
@@ -71,6 +72,12 @@ export async function startSessionAction(input: unknown): Promise<ActionResult<{
     where: { id: parsed.data.leadListId, status: "ACTIVE" },
   });
   if (!leadList) return { ok: false, error: "That lead list is no longer available." };
+
+  // Re-checked here rather than trusting that the picker only offered lists
+  // this setter may call — see canSetterUseLeadList.
+  if (!(await canSetterUseLeadList(user, leadList.id))) {
+    return { ok: false, error: "That lead list isn't assigned to you." };
+  }
 
   let session;
   try {

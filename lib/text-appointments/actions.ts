@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db/client";
 import { requireActionRole } from "@/lib/auth/guard";
 import { rebuildAggregateForTextAppointment } from "@/lib/aggregation/daily";
+import { canSetterUseLeadList } from "@/lib/lead-lists/queries";
 import { logTextAppointmentSchema } from "@/lib/validation/text-appointments";
 import { checkRateLimit } from "@/lib/rate-limit/memory";
 import type { ActionResult } from "@/lib/sessions/actions";
@@ -26,6 +27,12 @@ export async function logTextAppointmentAction(input: unknown): Promise<ActionRe
     where: { id: parsed.data.leadListId, status: "ACTIVE" },
   });
   if (!leadList) return { ok: false, error: "That lead list is no longer available." };
+
+  // Same independent check as startSessionAction — a restricted list must be
+  // unusable by id here too, not merely hidden from the picker.
+  if (!(await canSetterUseLeadList(user, leadList.id))) {
+    return { ok: false, error: "That lead list isn't assigned to you." };
+  }
 
   const entry = await prisma.textAppointment.create({
     data: { setterId: user.id, leadListId: leadList.id, note: parsed.data.note || null },

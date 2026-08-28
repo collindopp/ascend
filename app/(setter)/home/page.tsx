@@ -13,7 +13,7 @@ export default async function HomePage() {
     redirect(`/session/${activeSession.id}`);
   }
 
-  const leadLists = await getActiveLeadListsWithStats();
+  const leadLists = await getActiveLeadListsWithStats(user);
 
   return (
     <div>
@@ -25,9 +25,15 @@ export default async function HomePage() {
       </div>
       <div className="mt-6">
         {leadLists.length === 0 ? (
+          // A setter seeing nothing almost always means "assigned nothing yet"
+          // rather than "none exist", so point them at the actual fix.
           <EmptyState
-            title="No lead lists available"
-            description="Ask a manager or admin to add an active lead list before you can start calling."
+            title={user.role === "SETTER" ? "No lead lists assigned to you" : "No lead lists available"}
+            description={
+              user.role === "SETTER"
+                ? "Ask your manager to assign you a lead list before you can start calling."
+                : "Add an active lead list before you can start calling."
+            }
           />
         ) : (
           <LeadListSelector leadLists={leadLists} />

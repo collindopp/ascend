@@ -93,6 +93,7 @@ model User {
   dailyAggregates   DailyAggregate[]
   textAppointments  TextAppointment[]
   weeklyGoals       WeeklyGoal[]
+  leadListAssignments LeadListAssignment[]
 
   @@index([teamId])
   @@index([role])
@@ -117,9 +118,34 @@ model LeadList {
   callingSessions CallingSession[]
   dailyAggregates DailyAggregate[]
   textAppointments TextAppointment[]
+  assignments     LeadListAssignment[]
 
   @@index([status])
   @@map("lead_lists")
+}
+
+/**
+ * Which setters may call a given lead list. A list with no rows here is
+ * visible to nobody (see lib/lead-lists/queries.ts) — assignment is required,
+ * not an override on an otherwise-open list.
+ *
+ * Managers and admins are deliberately not represented: their visibility is
+ * role-derived and total, so restricting a list never hides its data from
+ * the analytics surfaces.
+ */
+model LeadListAssignment {
+  id         String   @id @default(cuid())
+  leadListId String
+  setterId   String
+  createdAt  DateTime @default(now())
+
+  leadList LeadList @relation(fields: [leadListId], references: [id], onDelete: Cascade)
+  setter   User     @relation(fields: [setterId], references: [id], onDelete: Cascade)
+
+  @@unique([leadListId, setterId])
+  @@index([leadListId])
+  @@index([setterId])
+  @@map("lead_list_assignments")
 }
 
 model CallingSession {
