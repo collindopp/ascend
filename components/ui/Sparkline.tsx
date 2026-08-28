@@ -6,6 +6,34 @@ interface SparklineProps {
 
 const PAD_Y = 2;
 
+const GRADIENT_ID = "ascend-sparkline-fill";
+
+/**
+ * The fade every Sparkline fills with, defined once for the whole document
+ * and rendered from the root layout.
+ *
+ * SVG paint servers resolve by id across separate <svg> elements, so a single
+ * definition serves every instance. Inlining it per sparkline instead would
+ * repeat the same markup a dozen times on a table and — since the id would
+ * have to be identical for them to look alike — emit duplicate ids, which is
+ * invalid HTML. One shared def avoids both.
+ *
+ * If sparklines ever render as a bare line with no fill beneath, this not
+ * being mounted is the first thing to check.
+ */
+export function SparklineDefs() {
+  return (
+    <svg width="0" height="0" aria-hidden focusable="false" className="absolute h-0 w-0">
+      <defs>
+        <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
+          <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 /**
  * Compact trend line for a table row — no axes, labels, or tooltip.
  *
@@ -45,7 +73,7 @@ export function Sparkline({ values, width = 64, height = 24 }: SparklineProps) {
       focusable="false"
       className="overflow-visible"
     >
-      <path d={area} fill="var(--accent)" fillOpacity={0.14} />
+      <path d={area} fill={`url(#${GRADIENT_ID})`} />
       <path d={line} stroke="var(--accent)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
