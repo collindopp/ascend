@@ -15,6 +15,9 @@ export interface SessionRow {
   appointments: number;
   dq: number;
   wrongNumber: number;
+  pickUps: number;
+  notInterested: number;
+  followUp: number;
   status: "ACTIVE" | "COMPLETED";
   startedAt: Date;
   endedAt: Date | null;
@@ -57,6 +60,9 @@ const fetchSessionRows = cache(
       appointments: s.appointments,
       dq: s.dq,
       wrongNumber: s.wrongNumber,
+      pickUps: s.pickUps,
+      notInterested: s.notInterested,
+      followUp: s.followUp,
       status: s.status,
       startedAt: s.startedAt,
       endedAt: s.endedAt,
@@ -113,6 +119,9 @@ export function groupBy(rows: SessionRow[], key: "setterId" | "leadListId"): Gro
       appointments: 0,
       dq: 0,
       wrongNumber: 0,
+      pickUps: 0,
+      notInterested: 0,
+      followUp: 0,
       durationSeconds: 0,
       sessionsCount: 0,
     };
@@ -121,6 +130,9 @@ export function groupBy(rows: SessionRow[], key: "setterId" | "leadListId"): Gro
     existing.appointments += row.appointments;
     existing.dq += row.dq;
     existing.wrongNumber += row.wrongNumber;
+    existing.pickUps += row.pickUps;
+    existing.notInterested += row.notInterested;
+    existing.followUp += row.followUp;
     existing.durationSeconds += row.durationSeconds;
     existing.sessionsCount += 1;
     map.set(id, existing);
@@ -150,6 +162,9 @@ export function groupByCell(rows: SessionRow[]): MatrixCell[] {
       appointments: 0,
       dq: 0,
       wrongNumber: 0,
+      pickUps: 0,
+      notInterested: 0,
+      followUp: 0,
       durationSeconds: 0,
     };
     existing.dials += row.dials;
@@ -157,6 +172,9 @@ export function groupByCell(rows: SessionRow[]): MatrixCell[] {
     existing.appointments += row.appointments;
     existing.dq += row.dq;
     existing.wrongNumber += row.wrongNumber;
+    existing.pickUps += row.pickUps;
+    existing.notInterested += row.notInterested;
+    existing.followUp += row.followUp;
     existing.durationSeconds += row.durationSeconds;
     map.set(key, existing);
   }

@@ -17,6 +17,24 @@ export function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSecti
   return <tbody className={cn("divide-y divide-border-subtle", className)} {...props} />;
 }
 
+/**
+ * Totals row. Set apart with a heavier top border and a slightly raised
+ * surface so it reads as a summary of the column rather than one more entry
+ * in it.
+ *
+ * Rates belong here only when recomputed from the summed counts — averaging a
+ * column of percentages weights a rep with 3 conversations the same as one
+ * with 300 and produces a number that matches nothing.
+ */
+export function TableFoot({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
+  return (
+    <tfoot
+      className={cn("border-t-2 border-border-strong bg-surface-2/40 font-medium", className)}
+      {...props}
+    />
+  );
+}
+
 export function TableRow({
   className,
   ...props

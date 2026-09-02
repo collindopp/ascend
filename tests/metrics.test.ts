@@ -11,6 +11,8 @@ import {
   outcomesWorked,
   deriveMetrics,
   sumTotals,
+  notInterestedRate,
+  followUpRate,
 } from "@/lib/metrics/core";
 
 describe("conversionRate", () => {
@@ -101,7 +103,7 @@ describe("dqRate / wrongNumberRate", () => {
 
 describe("deriveMetrics", () => {
   it("computes the full standard metric set from raw totals", () => {
-    const metrics = deriveMetrics({ dials: 427, conversations: 71, appointments: 11, dq: 9, wrongNumber: 5, durationSeconds: 3600 });
+    const metrics = deriveMetrics({ dials: 427, conversations: 71, appointments: 11, dq: 9, wrongNumber: 5, pickUps: 0, notInterested: 0, followUp: 0, durationSeconds: 3600 });
     expect(metrics.conversionRate).toBeCloseTo(16.62, 1);
     expect(metrics.setRateFromConversations).toBeCloseTo(15.49, 1);
     expect(metrics.setRateFromDials).toBeCloseTo(2.58, 1);
@@ -113,7 +115,7 @@ describe("deriveMetrics", () => {
   });
 
   it("returns all nulls for a completely empty session — never partial garbage", () => {
-    const metrics = deriveMetrics({ dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 });
+    const metrics = deriveMetrics({ dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, pickUps: 0, notInterested: 0, followUp: 0, durationSeconds: 0 });
     expect(metrics.conversionRate).toBeNull();
     expect(metrics.setRateFromConversations).toBeNull();
     expect(metrics.setRateFromDials).toBeNull();
@@ -130,13 +132,56 @@ describe("deriveMetrics", () => {
 describe("sumTotals", () => {
   it("sums raw totals across multiple rows", () => {
     const totals = sumTotals([
-      { dials: 10, conversations: 2, appointments: 1, dq: 1, wrongNumber: 0, durationSeconds: 600 },
-      { dials: 20, conversations: 4, appointments: 2, dq: 0, wrongNumber: 1, durationSeconds: 1200 },
+      { dials: 10, conversations: 2, appointments: 1, dq: 1, wrongNumber: 0, pickUps: 0, notInterested: 0, followUp: 0, durationSeconds: 600 },
+      { dials: 20, conversations: 4, appointments: 2, dq: 0, wrongNumber: 1, pickUps: 0, notInterested: 0, followUp: 0, durationSeconds: 1200 },
     ]);
-    expect(totals).toEqual({ dials: 30, conversations: 6, appointments: 3, dq: 1, wrongNumber: 1, durationSeconds: 1800 });
+    expect(totals).toEqual({ dials: 30, conversations: 6, appointments: 3, dq: 1, wrongNumber: 1, pickUps: 0, notInterested: 0, followUp: 0, durationSeconds: 1800 });
   });
 
   it("returns all zeros for an empty list", () => {
-    expect(sumTotals([])).toEqual({ dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 });
+    expect(sumTotals([])).toEqual({ dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, pickUps: 0, notInterested: 0, followUp: 0, durationSeconds: 0 });
+  });
+});
+
+describe("notInterestedRate / followUpRate", () => {
+  it("measures both against conversations, since each is a tag on one", () => {
+    // 100 conversations, 20 of which the prospect declined outright.
+    expect(notInterestedRate(20, 100)).toBe(20);
+    expect(followUpRate(5, 100)).toBe(5);
+  });
+
+  it("returns null rather than dividing by zero when nobody was reached", () => {
+    expect(notInterestedRate(0, 0)).toBeNull();
+    expect(followUpRate(3, 0)).toBeNull();
+  });
+
+  it("leaves the quality rates alone — these tags ride on conversations already counted", () => {
+    const withTags = deriveMetrics({
+      dials: 0,
+      conversations: 100,
+      appointments: 10,
+      dq: 20,
+      wrongNumber: 5,
+      pickUps: 40,
+      notInterested: 30,
+      followUp: 8,
+      durationSeconds: 3600,
+    });
+    const withoutTags = deriveMetrics({
+      dials: 0,
+      conversations: 100,
+      appointments: 10,
+      dq: 20,
+      wrongNumber: 5,
+      pickUps: 0,
+      notInterested: 0,
+      followUp: 0,
+      durationSeconds: 3600,
+    });
+
+    // DQ ÷ (100 + 20 + 5) either way — the new counters must not enter the denominator.
+    expect(withTags.dqRate).toBe(withoutTags.dqRate);
+    expect(withTags.wrongNumberRate).toBe(withoutTags.wrongNumberRate);
+    expect(withTags.setRateFromConversations).toBe(withoutTags.setRateFromConversations);
   });
 });

@@ -34,7 +34,7 @@ export function SessionSummary({
   followUp,
 }: SessionSummaryProps) {
   const durationSeconds = Math.max(0, Math.round((endedAt.getTime() - startedAt.getTime()) / 1000));
-  const metrics = deriveMetrics({ dials, conversations, appointments, dq, wrongNumber, durationSeconds });
+  const metrics = deriveMetrics({ dials, conversations, appointments, dq, wrongNumber, pickUps, notInterested, followUp, durationSeconds });
 
   return (
     <div className="flex flex-col gap-8">

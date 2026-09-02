@@ -24,9 +24,15 @@ export async function GET(request: Request) {
     { key: "dq", label: "DQ", value: (r) => r.dq },
     { key: "wrongNumber", label: "Wrong #", value: (r) => r.wrongNumber },
     { key: "textAppointments", label: "Text Appointments", value: (r) => r.textAppointments },
+    { key: "totalSets", label: "Total Sets", value: (r) => r.appointments + r.textAppointments },
+    { key: "pickUps", label: "Pick Ups", value: (r) => r.pickUps },
+    { key: "notInterested", label: "Not Interested", value: (r) => r.notInterested },
+    { key: "followUp", label: "Follow Up", value: (r) => r.followUp },
     { key: "setRate", label: "Set Rate", value: (r) => formatPercent(r.metrics.setRateFromConversations) },
     { key: "dqRate", label: "DQ Rate", value: (r) => formatPercent(r.metrics.dqRate) },
     { key: "wrongNumberRate", label: "Wrong # Rate", value: (r) => formatPercent(r.metrics.wrongNumberRate) },
+    { key: "notInterestedRate", label: "Not Interested Rate", value: (r) => formatPercent(r.metrics.notInterestedRate) },
+    { key: "followUpRate", label: "Follow Up Rate", value: (r) => formatPercent(r.metrics.followUpRate) },
     { key: "rankEligible", label: "Statistically Ranked", value: (r) => (r.rankEligible ? "Yes" : "No — low sample") },
   ]);
 

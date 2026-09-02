@@ -1,7 +1,7 @@
 import "server-only";
 import { subDays, startOfDay, format } from "date-fns";
 import { prisma } from "@/lib/db/client";
-import { deriveMetrics, setRateFromConversations, sumTotals } from "@/lib/metrics/core";
+import { deriveMetrics, setRateFromConversations, sumTotals, EMPTY_TOTALS } from "@/lib/metrics/core";
 import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 import { fetchSessionsInRange, groupBy } from "@/lib/analytics/queries";
 import type { DateRange } from "@/lib/utils/date-range";
@@ -43,7 +43,7 @@ export async function getSetterRows(range: DateRange) {
   if (missingIds.length > 0) {
     const missingSetters = await prisma.user.findMany({ where: { id: { in: missingIds } }, select: { id: true, name: true } });
     for (const setter of missingSetters) {
-      const zeroTotals = { dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 };
+      const zeroTotals = EMPTY_TOTALS;
       grouped.push({
         id: setter.id,
         name: setter.name,

@@ -48,6 +48,9 @@ export async function GET(request: Request) {
           appointments: s.appointments,
           dq: s.dq,
           wrongNumber: s.wrongNumber,
+          pickUps: s.pickUps,
+          notInterested: s.notInterested,
+          followUp: s.followUp,
           durationSeconds,
         });
         return m.setRateFromConversations !== null ? m.setRateFromConversations.toFixed(1) : null;

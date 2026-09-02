@@ -38,6 +38,9 @@ export default async function LeadListDetailPage({ params, searchParams }: PageP
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <MetricDisplay label="Pick Ups" value={formatInt(detail.totals.pickUps)} size="md" tone="muted" />
+        <MetricDisplay label="Not Interested" value={formatInt(detail.totals.notInterested)} size="md" tone="muted" />
+        <MetricDisplay label="Follow Up" value={formatInt(detail.totals.followUp)} size="md" tone="muted" />
         <MetricDisplay label="DQ" value={formatInt(detail.totals.dq)} size="md" tone="muted" />
         <MetricDisplay label="Wrong Name/Number" value={formatInt(detail.totals.wrongNumber)} size="md" tone="muted" />
         <MetricDisplay label="DQ Rate" value={formatPercent(detail.metrics.dqRate)} size="md" tone={dqRateTone(detail.metrics.dqRate)} />
@@ -47,6 +50,8 @@ export default async function LeadListDetailPage({ params, searchParams }: PageP
           size="md"
           tone={wrongNumberRateTone(detail.metrics.wrongNumberRate)}
         />
+        <MetricDisplay label="Not Interested Rate" value={formatPercent(detail.metrics.notInterestedRate)} size="md" />
+        <MetricDisplay label="Follow Up Rate" value={formatPercent(detail.metrics.followUpRate)} size="md" />
       </div>
 
       <Card>

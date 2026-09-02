@@ -1,7 +1,7 @@
 import "server-only";
 import { subDays, startOfDay, format } from "date-fns";
 import { prisma } from "@/lib/db/client";
-import { deriveMetrics, setRateFromConversations, sumTotals } from "@/lib/metrics/core";
+import { deriveMetrics, setRateFromConversations, sumTotals, EMPTY_TOTALS } from "@/lib/metrics/core";
 import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 import { fetchSessionsInRange, groupBy } from "@/lib/analytics/queries";
 import type { DateRange } from "@/lib/utils/date-range";
@@ -49,9 +49,12 @@ export async function getLeadListRows(range: DateRange) {
         appointments: 0,
         dq: 0,
         wrongNumber: 0,
+        pickUps: 0,
+        notInterested: 0,
+        followUp: 0,
         durationSeconds: 0,
         sessionsCount: 0,
-        metrics: deriveMetrics({ dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 }),
+        metrics: deriveMetrics(EMPTY_TOTALS),
         rankEligible: false,
         textAppointments: textTotals.get(list.id) ?? 0,
       });
@@ -104,6 +107,9 @@ export async function getLeadListDetail(leadListId: string, range: DateRange) {
         appointments: 0,
         dq: 0,
         wrongNumber: 0,
+        pickUps: 0,
+        notInterested: 0,
+        followUp: 0,
         durationSeconds: 0,
         sessionsCount: 0,
         setRate: null,

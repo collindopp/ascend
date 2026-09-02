@@ -38,6 +38,13 @@ export default async function SetterDetailPage({ params, searchParams }: PagePro
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <MetricDisplay label="Pick Ups" value={formatInt(detail.totals.pickUps)} size="sm" tone="muted" />
+        <MetricDisplay label="Not Interested" value={formatInt(detail.totals.notInterested)} size="sm" tone="muted" />
+        <MetricDisplay label="Follow Up" value={formatInt(detail.totals.followUp)} size="sm" tone="muted" />
+        <MetricDisplay label="Sessions" value={formatInt(detail.sessionsCount)} size="sm" tone="muted" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <MetricDisplay label="DQ" value={formatInt(detail.totals.dq)} size="sm" tone="muted" />
         <MetricDisplay label="Wrong #" value={formatInt(detail.totals.wrongNumber)} size="sm" tone="muted" />
         <MetricDisplay label="DQ Rate" value={formatPercent(detail.metrics.dqRate)} size="sm" tone={dqRateTone(detail.metrics.dqRate)} />
@@ -47,6 +54,8 @@ export default async function SetterDetailPage({ params, searchParams }: PagePro
           size="sm"
           tone={wrongNumberRateTone(detail.metrics.wrongNumberRate)}
         />
+        <MetricDisplay label="Not Interested Rate" value={formatPercent(detail.metrics.notInterestedRate)} size="sm" />
+        <MetricDisplay label="Follow Up Rate" value={formatPercent(detail.metrics.followUpRate)} size="sm" />
       </div>
 
       <Card>

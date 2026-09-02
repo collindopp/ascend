@@ -7,7 +7,8 @@ import { meetsSetRateThreshold } from "@/lib/metrics/thresholds";
 export interface PersonalPerformance {
   allTime: RawTotals & { sessionsCount: number };
   metrics: ReturnType<typeof deriveMetrics>;
-  extras: { pickUps: number; notInterested: number; followUp: number; textAppointments: number };
+  /** Text appointments have no CallingSession row, so they stay outside RawTotals. */
+  extras: { textAppointments: number };
   teamAverageSetRate: number | null;
   bestSession: {
     id: string;
@@ -30,23 +31,21 @@ export async function getPersonalPerformance(setterId: string): Promise<Personal
       appointments: a.appointments,
       dq: a.dq,
       wrongNumber: a.wrongNumber,
+      pickUps: a.pickUps,
+      notInterested: a.notInterested,
+      followUp: a.followUp,
       durationSeconds: a.durationSeconds,
     })),
   );
   const sessionsCount = aggregates.reduce((sum, a) => sum + a.sessionsCount, 0);
   const metrics = deriveMetrics(allTimeTotals);
 
-  // Kept separate from RawTotals/deriveMetrics — these are plain tracked
-  // counts, not part of any existing rate calculation.
-  const extras = aggregates.reduce(
-    (acc, a) => ({
-      pickUps: acc.pickUps + a.pickUps,
-      notInterested: acc.notInterested + a.notInterested,
-      followUp: acc.followUp + a.followUp,
-      textAppointments: acc.textAppointments + a.textAppointments,
-    }),
-    { pickUps: 0, notInterested: 0, followUp: 0, textAppointments: 0 },
-  );
+  // Pick ups, not-interested and follow-ups now ride along in allTime via
+  // RawTotals; only text appointments still need summing separately, since
+  // they're logged without a calling session at all.
+  const extras = {
+    textAppointments: aggregates.reduce((sum, a) => sum + a.textAppointments, 0),
+  };
 
   // Team average set rate across all setters, all-time — for the "vs team" comparison.
   const teamAgg = await prisma.dailyAggregate.aggregate({

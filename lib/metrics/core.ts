@@ -51,12 +51,34 @@ export function perHour(count: number, durationSeconds: number): number | null {
 
 /**
  * Every worked lead resolves to exactly one outcome: a logged conversation,
- * a DQ, or a wrong number (an appointment is an *additional* tap on top of
- * an existing conversation, not a separate outcome — so it's excluded here
- * to avoid double-counting the same lead).
+ * a DQ, or a wrong number.
+ *
+ * Appointment, Not Interested and Follow Up are all *additional* taps layered
+ * on top of an existing conversation rather than outcomes in their own right,
+ * so they're excluded here — counting them would divide by the same lead more
+ * than once and understate both quality rates.
  */
 export function outcomesWorked(conversations: number, dq: number, wrongNumber: number): number {
   return conversations + dq + wrongNumber;
+}
+
+/**
+ * Not Interested ÷ Conversations × 100.
+ *
+ * Both of the rates below describe what happens *inside* a real conversation,
+ * which is why conversations is the denominator: the rep reached a person and
+ * pitched, and this is how it landed. Read alongside set rate they account for
+ * the outcome of a conversation — booked, rejected, or deferred.
+ */
+export function notInterestedRate(notInterested: number, conversations: number): number | null {
+  const rate = safeDivide(notInterested, conversations);
+  return rate === null ? null : rate * 100;
+}
+
+/** Follow Up ÷ Conversations × 100 — share of conversations parked for a callback. */
+export function followUpRate(followUp: number, conversations: number): number | null {
+  const rate = safeDivide(followUp, conversations);
+  return rate === null ? null : rate * 100;
 }
 
 /** DQ ÷ (Conversations + DQ + Wrong#) × 100 — disqualified share of worked leads, a list-quality signal */
@@ -77,6 +99,14 @@ export interface RawTotals {
   appointments: number;
   dq: number;
   wrongNumber: number;
+  /**
+   * Tapped when someone answers. Currently logged inconsistently — far fewer
+   * pick ups exist than outcomes — so it's carried as a count and deliberately
+   * not used as the denominator of any rate until the habit is reliable.
+   */
+  pickUps: number;
+  notInterested: number;
+  followUp: number;
   durationSeconds: number;
 }
 
@@ -91,6 +121,8 @@ export interface DerivedMetrics {
   appointmentsPerHour: number | null;
   dqRate: number | null;
   wrongNumberRate: number | null;
+  notInterestedRate: number | null;
+  followUpRate: number | null;
 }
 
 /** Computes the full standard metric set from a raw totals bucket in one call. */
@@ -106,8 +138,22 @@ export function deriveMetrics(totals: RawTotals): DerivedMetrics {
     appointmentsPerHour: perHour(totals.appointments, totals.durationSeconds),
     dqRate: dqRate(totals.dq, totals.conversations, totals.wrongNumber),
     wrongNumberRate: wrongNumberRate(totals.wrongNumber, totals.conversations, totals.dq),
+    notInterestedRate: notInterestedRate(totals.notInterested, totals.conversations),
+    followUpRate: followUpRate(totals.followUp, totals.conversations),
   };
 }
+
+export const EMPTY_TOTALS: RawTotals = {
+  dials: 0,
+  conversations: 0,
+  appointments: 0,
+  dq: 0,
+  wrongNumber: 0,
+  pickUps: 0,
+  notInterested: 0,
+  followUp: 0,
+  durationSeconds: 0,
+};
 
 export function sumTotals(rows: RawTotals[]): RawTotals {
   return rows.reduce<RawTotals>(
@@ -117,8 +163,11 @@ export function sumTotals(rows: RawTotals[]): RawTotals {
       appointments: acc.appointments + row.appointments,
       dq: acc.dq + row.dq,
       wrongNumber: acc.wrongNumber + row.wrongNumber,
+      pickUps: acc.pickUps + row.pickUps,
+      notInterested: acc.notInterested + row.notInterested,
+      followUp: acc.followUp + row.followUp,
       durationSeconds: acc.durationSeconds + row.durationSeconds,
     }),
-    { dials: 0, conversations: 0, appointments: 0, dq: 0, wrongNumber: 0, durationSeconds: 0 },
+    { ...EMPTY_TOTALS },
   );
 }

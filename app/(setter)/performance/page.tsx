@@ -68,13 +68,13 @@ export default async function PerformancePage() {
           value={<AnimatedNumber value={perf.extras.textAppointments} initialValue={0} />}
           tone="positive"
         />
-        <MetricDisplay label="Pick Ups" value={<AnimatedNumber value={perf.extras.pickUps} initialValue={0} />} tone="muted" />
+        <MetricDisplay label="Pick Ups" value={<AnimatedNumber value={perf.allTime.pickUps} initialValue={0} />} tone="muted" />
         <MetricDisplay
           label="Not Interested"
-          value={<AnimatedNumber value={perf.extras.notInterested} initialValue={0} />}
+          value={<AnimatedNumber value={perf.allTime.notInterested} initialValue={0} />}
           tone="muted"
         />
-        <MetricDisplay label="Follow Up" value={<AnimatedNumber value={perf.extras.followUp} initialValue={0} />} tone="muted" />
+        <MetricDisplay label="Follow Up" value={<AnimatedNumber value={perf.allTime.followUp} initialValue={0} />} tone="muted" />
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 animate-fade-in-up" style={{ animationDelay: "180ms" }}>
