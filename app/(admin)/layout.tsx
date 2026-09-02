@@ -1,18 +1,14 @@
 import { requirePageRole } from "@/lib/auth/dal";
 import { NavShell } from "@/components/ui/NavShell";
 import { roleLabel } from "@/lib/auth/roles";
+import { navFor } from "@/lib/nav/items";
 import { sweepStaleActiveSessions } from "@/lib/sessions/auto-timeout";
 
-const NAV_ITEMS = [
-  { label: "Tally", href: "/home" },
-  { label: "Users", href: "/admin/users" },
-  { label: "Teams", href: "/admin/teams" },
-  { label: "Lead Lists", href: "/admin/lead-lists" },
-  { label: "Integrations", href: "/admin/integrations" },
-  { label: "Audit Log", href: "/admin/audit-log" },
-  { label: "Settings", href: "/admin/settings" },
-];
-
+/**
+ * Renders the same nav as the manager surfaces (see lib/nav/items.ts): the
+ * admin pages are a group inside it rather than a separate bar, so entering
+ * this section no longer swaps the whole navigation out.
+ */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requirePageRole(["ADMIN"]);
 
@@ -21,7 +17,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   await sweepStaleActiveSessions();
 
   return (
-    <NavShell items={NAV_ITEMS} roleLabel={roleLabel(user.role)} userName={user.name ?? user.email ?? ""}>
+    <NavShell
+      entries={navFor(user.role)}
+      roleLabel={roleLabel(user.role)}
+      userName={user.name ?? user.email ?? ""}
+    >
       {children}
     </NavShell>
   );

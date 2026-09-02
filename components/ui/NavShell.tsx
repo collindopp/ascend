@@ -1,13 +1,19 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { NavLinks, type NavItem } from "@/components/ui/NavLinks";
+import { NavMenu, NavMenuMobile } from "@/components/ui/NavMenu";
+import { CommandPalette } from "@/components/ui/CommandPalette";
 import { MobileTabBar } from "@/components/ui/MobileTabBar";
 import { LogoutButton } from "@/components/ui/LogoutButton";
 import { Logo } from "@/components/ui/Logo";
 import { cn } from "@/lib/utils/cn";
+import { flattenNav, type NavEntry } from "@/lib/nav/items";
 
 interface NavShellProps {
-  items: NavItem[];
+  /** Grouped nav for the management surfaces. */
+  entries?: NavEntry[];
+  /** Flat nav for the setter surfaces, which use the bottom tab bar. */
+  items?: NavItem[];
   roleLabel: string;
   userName: string;
   children: ReactNode;
@@ -21,8 +27,9 @@ interface NavShellProps {
   variant?: "top" | "bottom-tabs";
 }
 
-export function NavShell({ items, roleLabel, userName, children, variant = "top" }: NavShellProps) {
+export function NavShell({ entries, items, roleLabel, userName, children, variant = "top" }: NavShellProps) {
   const bottomTabs = variant === "bottom-tabs";
+  const flat = entries ? flattenNav(entries) : [];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -32,11 +39,12 @@ export function NavShell({ items, roleLabel, userName, children, variant = "top"
             <Link href="/" className="text-text-primary" aria-label="ASCEND home">
               <Logo className="h-4 w-auto" />
             </Link>
-            <nav className="hidden md:block">
-              <NavLinks items={items} />
-            </nav>
+            <div className="hidden md:block">
+              {entries ? <NavMenu entries={entries} /> : items ? <NavLinks items={items} /> : null}
+            </div>
           </div>
           <div className="flex items-center gap-4">
+            {entries && <CommandPalette items={flat} />}
             <div className="hidden text-right sm:block">
               <p className="text-sm text-text-primary">{userName}</p>
               <p className="text-xs uppercase tracking-wider text-text-tertiary">{roleLabel}</p>
@@ -45,9 +53,9 @@ export function NavShell({ items, roleLabel, userName, children, variant = "top"
           </div>
         </div>
         {!bottomTabs && (
-          <nav className="border-t border-border-subtle px-4 md:hidden">
-            <NavLinks items={items} />
-          </nav>
+          <div className="border-t border-border-subtle px-4 md:hidden">
+            {entries ? <NavMenuMobile items={flat} /> : items ? <NavLinks items={items} /> : null}
+          </div>
         )}
       </header>
       <main
@@ -58,7 +66,7 @@ export function NavShell({ items, roleLabel, userName, children, variant = "top"
       >
         {children}
       </main>
-      {bottomTabs && <MobileTabBar items={items} />}
+      {bottomTabs && items && <MobileTabBar items={items} />}
     </div>
   );
 }
