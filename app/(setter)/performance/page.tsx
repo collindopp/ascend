@@ -1,5 +1,7 @@
 import { requireUser } from "@/lib/auth/dal";
 import { getPersonalPerformance } from "@/lib/sessions/performance";
+import { getMorningBrief } from "@/lib/sessions/morning-brief";
+import { MorningBrief } from "@/components/setter/MorningBrief";
 import { MetricDisplay } from "@/components/ui/MetricDisplay";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { AnimatedRate } from "@/components/ui/AnimatedRate";
@@ -11,7 +13,7 @@ import { dqRateTone, wrongNumberRateTone } from "@/lib/format/tone";
 
 export default async function PerformancePage() {
   const user = await requireUser();
-  const perf = await getPersonalPerformance(user.id);
+  const [perf, brief] = await Promise.all([getPersonalPerformance(user.id), getMorningBrief(user.id)]);
 
   const relativeDiff =
     perf.metrics.setRateFromConversations !== null && perf.teamAverageSetRate
@@ -22,8 +24,16 @@ export default async function PerformancePage() {
     <div className="flex flex-col gap-8">
       <div className="animate-fade-in-up">
         <h1 className="text-lg font-semibold text-text-primary">Performance</h1>
-        <p className="mt-1 text-sm text-text-tertiary">Your all-time calling performance.</p>
+        <p className="mt-1 text-sm text-text-tertiary">Where you stand this week, and all-time below.</p>
       </div>
+
+      <div className="animate-fade-in-up" style={{ animationDelay: "30ms" }}>
+        <MorningBrief brief={brief} />
+      </div>
+
+      <p className="text-xs font-medium uppercase tracking-wider text-text-tertiary animate-fade-in-up" style={{ animationDelay: "45ms" }}>
+        All time
+      </p>
 
       <div
         className="flex flex-wrap items-end gap-8 rounded-[var(--radius-lg)] border border-border bg-gradient-to-b from-surface-2/40 to-surface-1 p-6 shadow-[var(--shadow-card)] animate-fade-in-up"

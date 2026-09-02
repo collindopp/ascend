@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/dal";
 import { getActiveSessionForSetter } from "@/lib/sessions/queries";
 import { getActiveLeadListsWithStats } from "@/lib/lead-lists/queries";
+import { getMorningBrief } from "@/lib/sessions/morning-brief";
+import { MorningBrief } from "@/components/setter/MorningBrief";
 import { LeadListSelector } from "@/components/setter/LeadListSelector";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -13,11 +15,18 @@ export default async function HomePage() {
     redirect(`/session/${activeSession.id}`);
   }
 
-  const leadLists = await getActiveLeadListsWithStats(user);
+  const [leadLists, brief] = await Promise.all([
+    getActiveLeadListsWithStats(user),
+    getMorningBrief(user.id),
+  ]);
 
   return (
     <div>
       <div className="animate-fade-in-up">
+        <MorningBrief brief={brief} compact />
+      </div>
+
+      <div className="mt-8 animate-fade-in-up" style={{ animationDelay: "60ms" }}>
         <h1 className="text-lg font-semibold text-text-primary">Select a lead list</h1>
         <p className="mt-1 text-sm text-text-tertiary">
           Choose what you&rsquo;re calling today. You can&rsquo;t switch lists mid-session.

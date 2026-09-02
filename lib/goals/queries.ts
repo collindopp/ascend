@@ -33,7 +33,7 @@ export interface WeeklyGoalRow {
 export async function getWeeklyGoalProgress(): Promise<WeeklyGoalRow[]> {
   const { start, end } = getCurrentWeekRange();
 
-  const [setters, goals, aggregates] = await Promise.all([
+  const [setters, goals, aggregates, inProgress] = await Promise.all([
     // This is the one leaderboard-adjacent view built from the full roster
     // rather than derived from activity — everywhere else naturally rolls
     // an inactive setter off over time as their sessions age out of the
@@ -50,10 +50,25 @@ export async function getWeeklyGoalProgress(): Promise<WeeklyGoalRow[]> {
       where: { date: { gte: start, lte: end } },
       _sum: { appointments: true, textAppointments: true },
     }),
+    // DailyAggregate is only rebuilt when a session ends, so a rep mid-shift
+    // is invisible to it. For a goal tracker that's read *during* the day —
+    // and is now the first thing a rep sees each morning — a booking has to
+    // move the bar immediately, not an hour later when they close the
+    // session. Active sessions are added on top; once one ends its work
+    // lands in the aggregate and this contributes nothing further, so the
+    // total is the same either way.
+    prisma.callingSession.groupBy({
+      by: ["setterId"],
+      where: { status: "ACTIVE", startedAt: { gte: start, lte: end } },
+      _sum: { appointments: true },
+    }),
   ]);
 
   const goalMap = new Map(goals.map((g) => [g.setterId, g.target]));
   const currentMap = new Map(aggregates.map((a) => [a.setterId, (a._sum.appointments ?? 0) + (a._sum.textAppointments ?? 0)]));
+  for (const live of inProgress) {
+    currentMap.set(live.setterId, (currentMap.get(live.setterId) ?? 0) + (live._sum.appointments ?? 0));
+  }
 
   return setters
     .map((s) => {
